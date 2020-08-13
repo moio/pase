@@ -38,7 +38,7 @@ class SourceCodeTokenizer extends CharTokenizer {
 
     @Override
     protected boolean isTokenChar(int cp) {
-        return Character.getType(cp) != Character.LINE_SEPARATOR;
+        return cp != 0x0D && cp != 0x0A;
     }
 }
 
