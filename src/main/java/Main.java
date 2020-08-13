@@ -103,8 +103,7 @@ public class Main {
 
             // Add the path of the file as a field named "path"
             // This is indexed (i.e. searchable), but not tokenized
-            Field pathField = new StringField("path", file.toString(), Field.Store.YES);
-            doc.add(pathField);
+            doc.add(new StringField("path", file.toString(), Field.Store.YES));
 
             // Add the contents of the file to a field named "source"
             doc.add(new TextField("source", new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))));
