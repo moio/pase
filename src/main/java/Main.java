@@ -49,15 +49,6 @@ class SourceAnalyzer extends Analyzer {
     }
 }
 
-class PathAnalyzer extends Analyzer {
-    @Override
-    protected TokenStreamComponents createComponents(String fieldName) {
-        // U+002F / SOLIDUS
-        Tokenizer tok = CharTokenizer.fromSeparatorCharPredicate(cp -> cp == 0x2F);
-        return new TokenStreamComponents(tok);
-    }
-}
-
 public class Main {
     public static void main(String[] args) throws IOException {
 
@@ -65,16 +56,9 @@ public class Main {
         var indexPath = "index";
         var buffer = 256;
 
-        var analyzer = new PerFieldAnalyzerWrapper(
-            new StandardAnalyzer(), // fallback
-            Map.of(
-                    "path", new PathAnalyzer(),
-                    "source", new SourceAnalyzer()
-            ));
-
         var dir = FSDirectory.open(Paths.get(indexPath));
 
-        var config = new IndexWriterConfig(analyzer)
+        var config = new IndexWriterConfig(new SourceAnalyzer())
                 .setOpenMode(CREATE)
                 .setRAMBufferSizeMB(buffer);
 
