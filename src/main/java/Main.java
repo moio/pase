@@ -78,24 +78,24 @@ public class Main {
                 .setRAMBufferSizeMB(buffer);
 
         try (var writer = new IndexWriter(dir, config)) {
-            visitFilesIn(Path.of(sourcePath), (path, lastModified) ->{
-                indexFile(writer, path, lastModified);
+            visitFilesIn(Path.of(sourcePath), path ->{
+                indexFile(writer, path);
             });
         }
     }
 
-    static void visitFilesIn(Path path, BiConsumer<Path, Long> consumer) throws IOException {
+    static void visitFilesIn(Path path, Consumer<Path> consumer) throws IOException {
         Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                consumer.accept(file, attrs.lastModifiedTime().toMillis());
+                consumer.accept(file);
                 return FileVisitResult.CONTINUE;
             }
         });
     }
 
     /** Indexes a single document */
-    static void indexFile(IndexWriter writer, Path file, long lastModified) {
+    static void indexFile(IndexWriter writer, Path file) {
         try (InputStream stream = Files.newInputStream(file)) {
             // make a new, empty document
             Document doc = new Document();
@@ -104,11 +104,6 @@ public class Main {
             // This is indexed (i.e. searchable), but not tokenized
             Field pathField = new StringField("path", file.toString(), Field.Store.YES);
             doc.add(pathField);
-
-            // Add the last modified date of the file a field named "modified".
-            // Use a LongPoint that is indexed (i.e. efficiently filterable with
-            // PointRangeQuery).  This indexes to second resolution
-            doc.add(new LongPoint("modified", lastModified/1000));
 
             // Add the contents of the file to a field named "source"
             doc.add(new TextField("source", new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))));
