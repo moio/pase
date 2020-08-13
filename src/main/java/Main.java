@@ -1,3 +1,4 @@
+import static org.apache.lucene.index.IndexWriterConfig.OpenMode.CREATE;
 import static org.apache.lucene.index.IndexWriterConfig.OpenMode.CREATE_OR_APPEND;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -74,7 +75,7 @@ public class Main {
         var dir = FSDirectory.open(Paths.get(indexPath));
 
         var config = new IndexWriterConfig(analyzer)
-                .setOpenMode(CREATE_OR_APPEND)
+                .setOpenMode(CREATE)
                 .setRAMBufferSizeMB(buffer);
 
         try (var writer = new IndexWriter(dir, config)) {
