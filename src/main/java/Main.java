@@ -1,14 +1,10 @@
+import static java.util.Optional.ofNullable;
 import static org.apache.lucene.index.IndexWriterConfig.OpenMode.CREATE;
-import static org.apache.lucene.index.IndexWriterConfig.OpenMode.CREATE_OR_APPEND;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.Tokenizer;
-import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.util.CharTokenizer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
@@ -20,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -27,9 +24,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Map;
-import java.util.function.BiConsumer;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 class SourceCodeTokenizer extends CharTokenizer {
     public SourceCodeTokenizer() {
@@ -63,20 +61,45 @@ public class Main {
                 .setRAMBufferSizeMB(buffer);
 
         try (var writer = new IndexWriter(dir, config)) {
-            visitFilesIn(Path.of(sourcePath), path ->{
+            visitTextFilesIn(Path.of(sourcePath), path -> {
                 indexFile(writer, path);
             });
         }
     }
 
-    static void visitFilesIn(Path path, Consumer<Path> consumer) throws IOException {
+    static void visitTextFilesIn(Path path, Consumer<Path> consumer) throws IOException {
         Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                consumer.accept(file);
+            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
+                try {
+                    var type = isText(path);
+                    System.out.println(path + "  -->  " + type);
+                    if (type) {
+                        consumer.accept(path);
+                    }
+                }
+                catch (IOException e) {
+                    System.out.println("Not visiting: " + path);
+                }
                 return FileVisitResult.CONTINUE;
             }
         });
+    }
+
+    static byte[] buf = new byte[1024];
+
+    static boolean isText(Path path) throws IOException {
+        // same heuristic used by diff
+        // https://dev.to/sharkdp/what-is-a-binary-file-2cf5
+        try (var file = new RandomAccessFile(path.toFile(), "r")) {
+            var count = file.read(buf, 0, buf.length);
+            for (int i = 0; i < count; i++) {
+                if (buf[i] == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /** Indexes a single document */
