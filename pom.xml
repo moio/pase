@@ -60,5 +60,15 @@
             <artifactId>lucene-analyzers-common</artifactId>
             <version>8.6.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>8.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.java-diff-utils</groupId>
+            <artifactId>java-diff-utils</artifactId>
+            <version>4.7</version>
+        </dependency>
     </dependencies>
 </project>
