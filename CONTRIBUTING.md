@@ -14,7 +14,7 @@ Executable jar will be produced in `target/pase-<version>.jar`
 ```
 mvn clean install
 java -jar target/pase-*.jar index src/test/resources/sources/ ./index
-java -jar target/pase-0.1-SNAPSHOT.jar search ./index2 src/test/resources/patches/CVE-2017-5638.patch
+java -jar target/pase-0.1-SNAPSHOT.jar search ./index src/test/resources/patches/CVE-2017-5638.patch
 ```
 
 ## Running JUnit tests
