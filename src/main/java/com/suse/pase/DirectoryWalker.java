@@ -17,8 +17,7 @@ public class DirectoryWalker {
         Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
-                var type = isText(path);
-                if (type) {
+                if (attrs.isRegularFile() && isText(path)) {
                     consumer.accept(path);
                 }
                 return FileVisitResult.CONTINUE;
