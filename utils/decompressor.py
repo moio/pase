@@ -19,7 +19,7 @@ DECOMPRESSORS = {
 def main():
     parser = argparse.ArgumentParser(description='Recursively decompress archives in a directory.')
     parser.add_argument("-d", "--directory", default=".", help="the directory to process")
-    parser.add_argument("-r", "--recursion-limit", type=int, default=2, help="increase output verbosity")
+    parser.add_argument("-r", "--recursion-limit", type=int, default=2, help="how many subdirectories to visit")
     args = parser.parse_args()
 
     pool = multiprocessing.Pool(8)
