@@ -9,6 +9,10 @@ mvn clean install
 
 Executable jar will be produced in `target/pase-<version>.jar`
 
+## Developing
+
+Any Java IDE can be used, IntelliJ IDEA is recommended and configuration files are provided.
+
 ## Smoke testing
 
 ```
