@@ -1,0 +1,27 @@
+variable "ssh_allowed_ips" {
+  description = "IP addresses allowed to open SSH connections"
+  # change below as needed
+  # default     = ["8.8.8.8"]
+}
+
+variable "key_name" {
+  description = "the name of the SSH key to use to deploy the host. Must be created in AWS manually"
+  # change below as needed
+  # default     = "moio"
+}
+
+variable "key_file" {
+  description = "path to the private key file (pem) corresponding to key_name"
+  # change below as needed
+  # default     = "~/.ssh/moio.pem"
+}
+
+variable "region" {
+  description = "Region where the instance is created"
+  default     = "eu-central-1"
+}
+
+variable "name_prefix" {
+  description = "prefix to names of all resources created by this configuration"
+  default     = "pase"
+}
