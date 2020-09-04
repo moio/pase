@@ -44,7 +44,7 @@ def decompress(file):
             shutil.rmtree(destination, ignore_errors=True)
             os.makedirs(destination, exist_ok=True)
             os.system(decompressor.format(file, destination))
-            return file
+            return destination
 
 if __name__ == "__main__":
     main()
