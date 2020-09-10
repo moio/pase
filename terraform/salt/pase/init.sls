@@ -4,6 +4,9 @@ java-11-openjdk-devel:
 git-core:
   pkg.installed
 
+bzip2:
+  pkg.installed
+
 pase_repo:
   cmd.run:
     - name: git clone https://github.com/moio/pase.git
