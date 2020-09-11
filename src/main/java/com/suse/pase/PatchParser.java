@@ -12,8 +12,15 @@ import com.github.difflib.unifieddiff.UnifiedDiffReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PatchParser {
+    // Mute logging from java-diff-util
+    static {
+        Logger.getLogger(UnifiedDiffReader.class.getName()).setLevel(Level.SEVERE);
+    }
+
     /** Parses a patch from an input stream and returns queries (one per file) **/
     public static List<FileQuery> parsePatch(InputStream is) throws IOException {
         var ud = UnifiedDiffReader.parseUnifiedDiff(is);
