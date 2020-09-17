@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /** Encapsulates Lucene details about writing indexes */
@@ -39,20 +38,20 @@ public class IndexWriter implements AutoCloseable {
     }
 
     /** Adds a file to the index */
-    public void add(Path file) {
-        try (InputStream stream = Files.newInputStream(file)) {
+    public void add(String path, InputStream stream) {
+        try {
             // make a new, empty document
             Document doc = new Document();
 
             // Add the path of the file as a field named "path"
             // This is indexed (i.e. searchable), but not tokenized
-            doc.add(new StringField(PATH_FIELD, file.toString(), Field.Store.YES));
+            doc.add(new StringField(PATH_FIELD, path, Field.Store.YES));
 
             // Add the contents of the file to a field named "source"
             doc.add(new TextField(SOURCE_FIELD, new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))));
 
             // Create or update if existing
-            this.writer.updateDocument(new Term(PATH_FIELD, file.toString()), doc);
+            this.writer.updateDocument(new Term(PATH_FIELD, path), doc);
         }
         catch (IOException e) {
             throw new RuntimeException(e);
