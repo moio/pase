@@ -3,9 +3,6 @@ package com.suse.pase;
 import static java.util.stream.Collectors.toList;
 
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -31,13 +28,8 @@ public class Main {
 
     public static void index(String sourcePath, String indexPath) throws Exception {
         try (var writer = new IndexWriter(Path.of(indexPath))) {
-            DirectoryWalker.forEachTextFileIn(Path.of(sourcePath), path -> {
-                try (InputStream stream = Files.newInputStream(path)) {
-                    writer.add(path.toString(), stream);
-                }
-                catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+            DirectoryWalker.forEachTextFileIn(Path.of(sourcePath), (path, stream) -> {
+                writer.add(path, stream);
             });
         }
     }

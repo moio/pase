@@ -1,24 +1,30 @@
 package com.suse.pase;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /** Utils to walk directory trees */
 public class DirectoryWalker {
 
-    /** Calls a method for all text files in a directory */
-    public static void forEachTextFileIn(Path path, Consumer<Path> consumer) throws IOException {
+    /** Allows to consume an InputStream for all text files found in a path (recursively) */
+    public static void forEachTextFileIn(Path path, BiConsumer<String, InputStream> consumer) throws IOException {
         Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
                 if (attrs.isRegularFile() && !attrs.isSymbolicLink() && isText(path)) {
-                    consumer.accept(path);
+                    try (InputStream stream = Files.newInputStream(path)) {
+                        consumer.accept(path.toString(), stream);
+                    }
+                    catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 return FileVisitResult.CONTINUE;
             }
