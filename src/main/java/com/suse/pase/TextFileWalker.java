@@ -33,6 +33,7 @@ public class TextFileWalker {
                 consumer.accept(path, stream);
             }
             else {
+                System.out.println("Processing: " + path);
                 walkArchive(path, stream, RECURSION_LIMIT, consumer);
             }
         });
