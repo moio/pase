@@ -23,7 +23,7 @@ import java.nio.file.Path;
 /** Encapsulates Lucene details about writing indexes */
 public class IndexWriter implements AutoCloseable {
 
-    org.apache.lucene.index.IndexWriter writer;
+    private final org.apache.lucene.index.IndexWriter writer;
 
     /** Opens an index for writing at the specified path */
     public IndexWriter(Path path) throws IOException {
