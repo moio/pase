@@ -31,7 +31,7 @@ public class IndexWriter implements AutoCloseable {
 
         var config = new IndexWriterConfig(new SourceAnalyzer())
             .setOpenMode(CREATE)
-            .setRAMBufferSizeMB(256);
+            .setRAMBufferSizeMB(512);
 
         this.writer = new org.apache.lucene.index.IndexWriter(dir, config);
     }
