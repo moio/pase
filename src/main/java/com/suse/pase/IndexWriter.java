@@ -19,9 +19,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.logging.Logger;
 
 /** Encapsulates Lucene details about writing indexes */
 public class IndexWriter implements AutoCloseable {
+
+    private static Logger LOG = Logger.getLogger(IndexWriter.class.getName());
 
     private final org.apache.lucene.index.IndexWriter writer;
 
@@ -58,7 +61,7 @@ public class IndexWriter implements AutoCloseable {
             this.writer.updateDocument(new Term(PATH_FIELD, path), doc);
         }
         catch (IOException e) {
-            throw new RuntimeException(e);
+            LOG.warning("Could not index path, error during read: " + path);
         }
     }
 
