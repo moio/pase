@@ -53,8 +53,8 @@ public class TextFileWalker {
     private boolean isText(Path path, BufferedInputStream stream) {
         // same heuristic used by diff
         // https://dev.to/sharkdp/what-is-a-binary-file-2cf5
+        stream.mark(buf.length);
         try {
-            stream.mark(buf.length);
             var count = stream.read(buf, 0, buf.length);
             for (int i = 0; i < count; i++) {
                 if (buf[i] == 0) {
@@ -62,11 +62,19 @@ public class TextFileWalker {
                     return false;
                 }
             }
-            stream.reset();
+            return true;
         }
         catch (IOException e) {
             LOG.warning("I/O error during text file check on " + path + ", skipping");
+            return false;
         }
-        return true;
+        finally {
+            try {
+                stream.reset();
+            }
+            catch (IOException e) {
+                // cannot happen in BufferedInputStream with mark >= 0
+            }
+        }
     }
 }
