@@ -7,6 +7,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
 
 /** Walks a directory (recursively), allowing a consumer to read any file inside of it */
@@ -15,6 +20,8 @@ public class DirectoryWalker {
     private static final int BUFFER_SIZE = 4 * 1024 * 1024;
 
     private final Path path;
+    private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private final List<Future> futures = new LinkedList<>();
 
     public DirectoryWalker(Path path){
         this.path = path;
@@ -27,15 +34,27 @@ public class DirectoryWalker {
                 @Override
                 public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
                     if (attrs.isRegularFile() && !attrs.isSymbolicLink()) {
-                        try (var fileStream = Files.newInputStream(path);
-                             var stream = new BufferedInputStream(fileStream, BUFFER_SIZE)) {
-                            consumer.accept(path, stream);
-                        }
-                        catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                        futures.add(executor.submit(() -> {
+                            try (var fileStream = Files.newInputStream(path);
+                                 var stream = new BufferedInputStream(fileStream, BUFFER_SIZE)) {
+                                consumer.accept(path, stream);
+                            }
+                            catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }));
                     }
                     return FileVisitResult.CONTINUE;
+                }
+            });
+
+            futures.stream().forEach(f -> {
+                try {
+                    f.get();
+                }
+                catch (Exception e) {
+                    // never happens
+                    throw new RuntimeException(e);
                 }
             });
         }
