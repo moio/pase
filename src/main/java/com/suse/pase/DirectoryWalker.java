@@ -54,7 +54,6 @@ public class DirectoryWalker {
                     f.get();
                 }
                 catch (Exception e) {
-                    // never happens
                     throw new RuntimeException(e);
                 }
             });
