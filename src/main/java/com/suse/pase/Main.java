@@ -29,6 +29,7 @@ public class Main {
     public static void index(String sourcePath, String indexPath) throws Exception {
         try (var writer = new IndexWriter(Path.of(indexPath))) {
             new TextFileWalker(Path.of(sourcePath)).withTextFilesIn((path, stream) -> {
+                System.out.println("Indexing: " + path);
                 writer.add(path.toString(), stream);
             });
         }
