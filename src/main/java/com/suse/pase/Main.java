@@ -28,8 +28,8 @@ public class Main {
 
     public static void index(String sourcePath, String indexPath) throws Exception {
         try (var writer = new IndexWriter(Path.of(indexPath))) {
-            DirectoryWalker.forEachTextFileIn(Path.of(sourcePath), (path, stream) -> {
-                writer.add(path, stream);
+            new TextFileWalker(Path.of(sourcePath)).withTextFilesIn((path, stream) -> {
+                writer.add(path.toString(), stream);
             });
         }
     }
