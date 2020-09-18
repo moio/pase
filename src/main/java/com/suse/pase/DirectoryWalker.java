@@ -48,6 +48,7 @@ public class DirectoryWalker {
                 }
             });
 
+            executor.shutdown();
             futures.stream().forEach(f -> {
                 try {
                     f.get();
