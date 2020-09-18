@@ -69,6 +69,4 @@ public class IndexWriter implements AutoCloseable {
     public void close() throws Exception {
         this.writer.close();
     }
-
-
 }
