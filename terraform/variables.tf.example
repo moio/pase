@@ -21,6 +21,11 @@ variable "region" {
   default     = "eu-central-1"
 }
 
+variable "instance_type" {
+  description = "EC2 instance type, https://aws.amazon.com/ec2/instance-types/"
+  default     = "t3a.medium"
+}
+
 variable "name_prefix" {
   description = "prefix to names of all resources created by this configuration"
   default     = "pase"

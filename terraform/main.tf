@@ -16,6 +16,7 @@ module "server" {
   name                  = "server"
   key_name              = var.key_name
   key_file              = var.key_file
+  instance_type         = var.instance_type
 }
 
 output "host_public_name" {
