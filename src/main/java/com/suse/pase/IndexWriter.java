@@ -14,7 +14,6 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.FSDirectory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -48,7 +47,12 @@ public class IndexWriter implements AutoCloseable {
             doc.add(new StringField(PATH_FIELD, path, Field.Store.YES));
 
             // Add the contents of the file to a field named "source"
-            doc.add(new TextField(SOURCE_FIELD, new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))));
+            doc.add(new TextField(SOURCE_FIELD, new InputStreamReader(stream, StandardCharsets.UTF_8){
+                @Override
+                public void close() throws IOException {
+                    // we do not want Lucene to close the underlying stream
+                }
+            }));
 
             // Create or update if existing
             this.writer.updateDocument(new Term(PATH_FIELD, path), doc);
