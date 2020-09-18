@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.logging.Logger;
 
 /** Walks an archive, allowing a consumer to read any file inside of it */
 public class ArchiveWalker {
@@ -24,6 +25,7 @@ public class ArchiveWalker {
     private static final List<String> TAR_GZIP_EXTENSIONS = List.of(".tar.gz", ".taz", ".tgz");
 
     private static final int BUFFER_SIZE = 4 * 1024 * 1024;
+    private static Logger LOG = Logger.getLogger(ArchiveWalker.class.getName());
 
     private final Path path;
     private final InputStream stream;
@@ -47,7 +49,7 @@ public class ArchiveWalker {
                     }
                 }
                 catch (IOException e) {
-                    throw new RuntimeException(e);
+                    LOG.warning("Could not decompress entry from archive (unexpected format?): " + path);
                 }
             });
     }
@@ -78,10 +80,10 @@ public class ArchiveWalker {
             if (path.toString().endsWith(".zip")) {
                 return of(new ArchiveStreamFactory().createArchiveInputStream("zip", stream));
             }
-            return empty();
         }
         catch (Exception e) {
-            throw new RuntimeException(e);
+            LOG.warning("Could not decompress archive (unexpected format?): " + path);
         }
+        return empty();
     }
 }
