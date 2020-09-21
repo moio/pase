@@ -11,6 +11,7 @@ pase_repo:
   cmd.run:
     - name: git clone https://github.com/moio/pase.git
     - cwd: /home/ec2-user
+    - creates: /home/ec2-user/pase
 
 maven:
   archive.extracted:
