@@ -15,6 +15,11 @@
 *.iml
 out/
 target/
+
+# vscode
+.vscode/
+
+# terraform
 terraform/variables.tf
 terraform/terraform.tfstate*
 terraform/.terraform/
