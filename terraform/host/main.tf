@@ -1,3 +1,8 @@
+locals {
+  instance_family = split(".", var.instance_type)[0]
+  arm_instance = contains(["a1", "t4g", "m6g"], local.instance_family)
+}
+
 data "aws_ami" "opensuse152" {
   most_recent = true
   name_regex  = "^openSUSE-Leap-15-2-v"
@@ -5,7 +10,7 @@ data "aws_ami" "opensuse152" {
 
   filter {
     name   = "architecture"
-    values = ["x86_64"]
+    values = [local.arm_instance ? "arm64" : "x86_64"]
   }
 
   filter {
