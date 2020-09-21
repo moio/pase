@@ -1,8 +1,8 @@
 package com.suse.pase;
 
 public class QueryResult {
-    private final String path;
-    private final float score;
+    final String path;
+    final float score;
 
 
     public QueryResult(String path, float score) {

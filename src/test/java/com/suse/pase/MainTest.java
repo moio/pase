@@ -2,6 +2,7 @@ package com.suse.pase;
 
 import static java.nio.file.Files.createTempDirectory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -33,6 +34,18 @@ public class MainTest {
         var patchPath = resourcePath.resolve("patches").resolve("CVE-2017-5638.patch");
         var results = Main.search(indexPath.toString(), patchPath.toString());
         assertEquals(3, results.size());
+
+        var first = results.get(0);
+        assertTrue(first.path.endsWith("multipart/JakartaMultiPartRequest.java"));
+        assertEquals(7.901535, first.score, 0.01);
+
+        var second = results.get(1);
+        assertTrue(second.path.endsWith("multipart/JakartaStreamMultiPartRequest.java"));
+        assertEquals(6.463032, second.score, 0.01);
+
+        var third = results.get(2);
+        assertTrue(third.path.endsWith("multipart/MultiPartRequestWrapper.java"));
+        assertEquals(8.004337, third.score, 0.01);
     }
 
     @AfterAll
