@@ -56,8 +56,16 @@ resource "aws_instance" "instance" {
   }
 }
 
+resource "aws_eip" "eip" {
+  instance = aws_instance.instance.id
+  vpc      = true
+  tags = {
+    Name = "${var.name_prefix}${var.name}-eip"
+  }
+}
+
 resource "null_resource" "host_salt_configuration" {
-  depends_on = [aws_instance.instance]
+  depends_on = [aws_instance.instance, aws_eip.eip]
 
   triggers = {
     domain_id = aws_instance.instance.id
@@ -91,14 +99,6 @@ resource "null_resource" "host_salt_configuration" {
       "sudo cp -rf /tmp/salt /root",
       "sudo salt-call --local --file-root=/root/salt --log-level=info --retcode-passthrough --force-color state.highstate"
     ]
-  }
-}
-
-resource "aws_eip" "eip" {
-  instance = aws_instance.instance.id
-  vpc      = true
-  tags = {
-    Name = "${var.name_prefix}${var.name}-eip"
   }
 }
 
