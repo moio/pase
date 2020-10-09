@@ -3,7 +3,7 @@ package com.suse.pase;
 import java.util.List;
 
 /** A query for a file */
-class FileQuery {
+public class FileQuery {
     private final String file;
     private final List<String> chunks;
 

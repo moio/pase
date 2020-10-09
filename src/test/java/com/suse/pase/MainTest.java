@@ -4,6 +4,9 @@ import static java.nio.file.Files.createTempDirectory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.suse.pase.cli.Index;
+import com.suse.pase.cli.Search;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,13 +29,13 @@ public class MainTest {
         // get path in random temporary location
         indexPath = createTempDirectory(MainTest.class.getCanonicalName());
 
-        Main.index(sourcePath.toString(), indexPath.toString());
+        Index.index(sourcePath, indexPath);
     }
 
     @org.junit.jupiter.api.Test
     public void searchTest() throws Exception {
         var patchPath = resourcePath.resolve("patches").resolve("CVE-2017-5638.patch");
-        var results = Main.search(indexPath.toString(), patchPath.toString());
+        var results = Search.search(indexPath, patchPath);
         assertEquals(3, results.size());
 
         var first = results.get(0);
