@@ -7,7 +7,7 @@ import java.util.concurrent.Callable;
 import picocli.CommandLine;
 
 @Command(name = "pase", mixinStandardHelpOptions = true, version = "pase 0.1",
-        description = "Source code patch search", subcommands = {Index.class, Search.class})
+        description = "Source code patch search", subcommands = {Index.class, Search.class, Serve.class})
 public class Main implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
