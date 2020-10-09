@@ -3,6 +3,7 @@ package com.suse.pase.cli;
 import static java.util.stream.Collectors.toList;
 import static spark.Spark.awaitInitialization;
 import static spark.Spark.exception;
+import static spark.Spark.staticFileLocation;
 import static spark.Spark.get;
 
 import com.github.difflib.unifieddiff.UnifiedDiffParserException;
@@ -33,6 +34,7 @@ public class Serve implements Callable<Integer> {
     public static void serve(Path indexPath) throws Exception {
         Gson gson = new Gson();
         try (var searcher = new IndexSearcher(indexPath)) {
+            staticFileLocation("/htdocs");
             get("/search", (req, res) -> {
                 // HACK: for testing purposes, allow Javascript from any site to send requests
                 res.header("Access-Control-Allow-Origin", "*");
