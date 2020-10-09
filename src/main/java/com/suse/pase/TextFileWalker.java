@@ -14,12 +14,13 @@ public class TextFileWalker {
 
     private static Logger LOG = Logger.getLogger(TextFileWalker.class.getName());
     private static byte[] buf = new byte[4096];
-    private static final int RECURSION_LIMIT = 2;
 
     private final Path root;
+    private final int recursionLimit;
 
-    public TextFileWalker(Path path) {
+    public TextFileWalker(Path path, int recursionLimit) {
         this.root = path;
+        this.recursionLimit = recursionLimit;
     }
 
     /**
@@ -32,9 +33,9 @@ public class TextFileWalker {
             if (isText(path, stream)) {
                 consumer.accept(path, stream);
             }
-            else {
+            else if (recursionLimit >=1) {
                 System.out.println("Processing: " + path);
-                walkArchive(path, stream, RECURSION_LIMIT, consumer);
+                walkArchive(path, stream, recursionLimit, consumer);
             }
         });
     }

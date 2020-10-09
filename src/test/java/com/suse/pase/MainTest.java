@@ -29,7 +29,7 @@ public class MainTest {
         // get path in random temporary location
         indexPath = createTempDirectory(MainTest.class.getCanonicalName());
 
-        Index.index(sourcePath, indexPath);
+        Index.index(sourcePath, indexPath, 2);
     }
 
     @org.junit.jupiter.api.Test
