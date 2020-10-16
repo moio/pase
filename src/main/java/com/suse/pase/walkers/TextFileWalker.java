@@ -1,4 +1,4 @@
-package com.suse.pase;
+package com.suse.pase.walkers;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;

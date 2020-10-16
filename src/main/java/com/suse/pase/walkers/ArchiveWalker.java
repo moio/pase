@@ -1,4 +1,4 @@
-package com.suse.pase;
+package com.suse.pase.walkers;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
