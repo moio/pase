@@ -3,7 +3,6 @@ package com.suse.pase.walkers;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 
 /**
@@ -28,7 +27,7 @@ public class TextFileWalker {
      * up to the specified recursion level of nested archives.
      * The consumer receives each file's path and a stream of its bytes.
      */
-    public void withTextFilesIn(BiConsumer<Path, BufferedInputStream> consumer) {
+    public void withTextFilesIn(WalkerConsumer consumer) {
         new DirectoryWalker(root).withFilesIn((path, stream) -> {
             if (isText(path, stream)) {
                 consumer.accept(path, stream);
@@ -40,7 +39,7 @@ public class TextFileWalker {
         });
     }
 
-    private void walkArchive(Path archivePath, BufferedInputStream archiveStream, int recursionLevel, BiConsumer<Path, BufferedInputStream> consumer) {
+    private void walkArchive(Path archivePath, BufferedInputStream archiveStream, int recursionLevel, WalkerConsumer consumer) {
         new ArchiveWalker(archivePath, archiveStream).withFilesIn((path, stream) -> {
             if (isText(path, stream)) {
                 consumer.accept(path, stream);

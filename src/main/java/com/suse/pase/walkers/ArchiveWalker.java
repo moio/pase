@@ -15,7 +15,6 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 
 /** Walks an archive, allowing a consumer to read any file inside of it */
@@ -36,7 +35,7 @@ public class ArchiveWalker {
     }
 
     /** Calls the consumer for all files in the archive. The consumer receives each file's path and a stream of its bytes. */
-    public void withFilesIn(BiConsumer<Path, BufferedInputStream> consumer) {
+    public void withFilesIn(WalkerConsumer consumer) {
         getArchiveInputStream().ifPresent(ais -> {
                 try {
                     ArchiveEntry entry;
