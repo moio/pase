@@ -2,11 +2,9 @@ package com.suse.pase.walkers;
 
 import java.io.BufferedInputStream;
 import java.nio.file.Path;
-import java.util.Optional;
 
 @FunctionalInterface
-/** A function that can walk a single path. */
-public interface WalkerConsumer {
+public interface SimpleWalkerConsumer {
     /**
      * Walk a single path.
      *
@@ -14,7 +12,6 @@ public interface WalkerConsumer {
      * @param fingerprint a String that changes whenever contents in path changes (between program invocations)
      *                    note that this could be a hash of the contents, but that is not necessarily required
      * @param stream the stream of bytes associated with path
-     * @return true if the content is new to the index, false if it was already present
      */
-    boolean accept(Path path, String fingerprint, Optional<BufferedInputStream> stream);
+    void accept(Path path, String fingerprint, BufferedInputStream stream);
 }

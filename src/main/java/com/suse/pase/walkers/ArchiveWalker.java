@@ -27,15 +27,17 @@ public class ArchiveWalker {
     private static Logger LOG = Logger.getLogger(ArchiveWalker.class.getName());
 
     private final Path path;
+    private final String fingerprint;
     private final InputStream stream;
 
-    public ArchiveWalker(Path path, InputStream stream){
+    public ArchiveWalker(Path path, String fingerprint, InputStream stream){
         this.path = path;
+        this.fingerprint = fingerprint;
         this.stream = stream;
     }
 
     /** Calls the consumer for all files in the archive. The consumer receives each file's path and a stream of its bytes. */
-    public void withFilesIn(WalkerConsumer consumer) {
+    public void withFilesIn(SimpleWalkerConsumer consumer) {
         getArchiveInputStream().ifPresent(ais -> {
                 try {
                     ArchiveEntry entry;
@@ -43,7 +45,7 @@ public class ArchiveWalker {
                         if (!entry.isDirectory()) {
                             var path = this.path.resolve(entry.getName());
                             var stream = new BufferedInputStream(ais, BUFFER_SIZE);
-                            consumer.accept(path, stream);
+                            consumer.accept(path, fingerprint, stream);
                         }
                     }
                 }

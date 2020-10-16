@@ -6,6 +6,8 @@ import org.apache.lucene.analysis.util.CharTokenizer;
 public class IndexCommons {
     public static final String SOURCE_FIELD = "source";
     public static final String PATH_FIELD = "path";
+    public static final String PATH_FINGERPRINT_FIELD = "path_fingerprint";
+    public static final String LAST_UPDATED_FIELD = "last_updated";
 
 
     /** Divides text by line (treats the whole line as a term). */
