@@ -1,4 +1,4 @@
-package com.suse.pase.walkers;
+package com.suse.pase.directory;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 
 /** Walks an archive, allowing a consumer to read any file inside of it */
@@ -27,17 +28,15 @@ public class ArchiveWalker {
     private static Logger LOG = Logger.getLogger(ArchiveWalker.class.getName());
 
     private final Path path;
-    private final String fingerprint;
     private final InputStream stream;
 
-    public ArchiveWalker(Path path, String fingerprint, InputStream stream){
+    public ArchiveWalker(Path path, InputStream stream){
         this.path = path;
-        this.fingerprint = fingerprint;
         this.stream = stream;
     }
 
     /** Calls the consumer for all files in the archive. The consumer receives each file's path and a stream of its bytes. */
-    public void withFilesIn(SimpleWalkerConsumer consumer) {
+    public void walkArchiveFiles(BiConsumer<Path, BufferedInputStream> consumer) {
         getArchiveInputStream().ifPresent(ais -> {
                 try {
                     ArchiveEntry entry;
@@ -45,7 +44,7 @@ public class ArchiveWalker {
                         if (!entry.isDirectory()) {
                             var path = this.path.resolve(entry.getName());
                             var stream = new BufferedInputStream(ais, BUFFER_SIZE);
-                            consumer.accept(path, fingerprint, stream);
+                            consumer.accept(path, stream);
                         }
                     }
                 }
@@ -55,7 +54,7 @@ public class ArchiveWalker {
             });
     }
 
-    public Optional<ArchiveInputStream> getArchiveInputStream () {
+    public Optional<ArchiveInputStream> getArchiveInputStream() {
         try {
             if (path.toString().endsWith(".rpm")) {
                 var rpmStream = new RpmInputStream(stream);

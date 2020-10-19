@@ -1,7 +1,7 @@
 package com.suse.pase.cli;
 
 import com.suse.pase.index.IndexWriter;
-import com.suse.pase.walkers.TextFileWalker;
+import com.suse.pase.directory.DirectoryIndexer;
 
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
@@ -27,7 +27,7 @@ public class Index implements Callable<Integer> {
 
     public static void index(Path sourcePath, Path indexPath, int recursionLimit) throws Exception {
         try (var writer = new IndexWriter(indexPath)) {
-            new TextFileWalker(sourcePath, recursionLimit).withTextFilesIn(writer::add);
+            new DirectoryIndexer(sourcePath, recursionLimit, writer).index();
         }
     }
 }
