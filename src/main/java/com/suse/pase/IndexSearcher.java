@@ -40,7 +40,7 @@ public class IndexSearcher implements AutoCloseable {
     /** Searches the index for a chunk */
     private List<QueryResult> search(String chunk) {
         try {
-            var analyzer=new SourceAnalyzer();
+            var analyzer = new SourceAnalyzer();
 
             var tokens = new LinkedList<String>();
             try (var tokenStream  = analyzer.tokenStream(SOURCE_FIELD, chunk)){
