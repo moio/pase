@@ -2,7 +2,7 @@ package com.suse.pase.cli;
 
 import static java.util.stream.Collectors.toList;
 
-import com.suse.pase.IndexSearcher;
+import com.suse.pase.index.IndexSearcher;
 import com.suse.pase.PatchParser;
 import com.suse.pase.QueryResult;
 

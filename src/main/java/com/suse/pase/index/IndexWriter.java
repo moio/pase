@@ -1,12 +1,12 @@
-package com.suse.pase;
+package com.suse.pase.index;
 
-import static com.suse.pase.IndexCommons.LAST_UPDATED_FIELD;
-import static com.suse.pase.IndexCommons.PATH_FIELD;
-import static com.suse.pase.IndexCommons.PATH_FINGERPRINT_FIELD;
-import static com.suse.pase.IndexCommons.SOURCE_FIELD;
+import static com.suse.pase.index.IndexCommons.LAST_UPDATED_FIELD;
+import static com.suse.pase.index.IndexCommons.PATH_FIELD;
+import static com.suse.pase.index.IndexCommons.PATH_FINGERPRINT_FIELD;
+import static com.suse.pase.index.IndexCommons.SOURCE_FIELD;
 import static org.apache.lucene.index.IndexWriterConfig.OpenMode.CREATE_OR_APPEND;
 
-import com.suse.pase.IndexCommons.SourceAnalyzer;
+import com.suse.pase.index.IndexCommons.SourceAnalyzer;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;

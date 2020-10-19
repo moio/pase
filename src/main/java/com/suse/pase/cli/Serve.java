@@ -8,7 +8,7 @@ import static spark.Spark.get;
 
 import com.github.difflib.unifieddiff.UnifiedDiffParserException;
 import com.google.gson.Gson;
-import com.suse.pase.IndexSearcher;
+import com.suse.pase.index.IndexSearcher;
 import com.suse.pase.PatchParser;
 
 import java.io.ByteArrayInputStream;

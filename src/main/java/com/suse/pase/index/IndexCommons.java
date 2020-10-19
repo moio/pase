@@ -1,4 +1,4 @@
-package com.suse.pase;
+package com.suse.pase.index;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.util.CharTokenizer;

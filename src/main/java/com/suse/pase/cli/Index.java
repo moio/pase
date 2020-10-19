@@ -1,6 +1,6 @@
 package com.suse.pase.cli;
 
-import com.suse.pase.IndexWriter;
+import com.suse.pase.index.IndexWriter;
 import com.suse.pase.walkers.TextFileWalker;
 
 import java.nio.file.Path;

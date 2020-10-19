@@ -1,12 +1,14 @@
-package com.suse.pase;
+package com.suse.pase.index;
 
-import static com.suse.pase.IndexCommons.PATH_FIELD;
-import static com.suse.pase.IndexCommons.SOURCE_FIELD;
+import static com.suse.pase.index.IndexCommons.PATH_FIELD;
+import static com.suse.pase.index.IndexCommons.SOURCE_FIELD;
 import static java.util.Arrays.stream;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 
-import com.suse.pase.IndexCommons.SourceAnalyzer;
+import com.suse.pase.FileQuery;
+import com.suse.pase.QueryResult;
+import com.suse.pase.index.IndexCommons.SourceAnalyzer;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.index.DirectoryReader;
