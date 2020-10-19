@@ -1,4 +1,4 @@
-package com.suse.pase.walkers;
+package com.suse.pase.index;
 
 import java.io.BufferedInputStream;
 import java.util.Optional;
@@ -15,5 +15,5 @@ public interface WalkerConsumer {
      * @param stream the stream of bytes associated with path
      * @return true if the content is new to the index, false if it was already present
      */
-    boolean accept(String path, String fingerprint, Optional<BufferedInputStream> stream);
+    boolean add(String path, String fingerprint, Optional<BufferedInputStream> stream);
 }

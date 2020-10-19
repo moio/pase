@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 /** Encapsulates Lucene details about writing indexes */
-public class IndexWriter implements AutoCloseable {
+public class IndexWriter implements AutoCloseable, WalkerConsumer {
     private static Logger LOG = Logger.getLogger(IndexWriter.class.getName());
 
     private final org.apache.lucene.index.IndexWriter writer;
