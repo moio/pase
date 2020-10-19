@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
+/** Encapsulates Lucene details about searching indexes */
 public class IndexSearcher implements AutoCloseable {
     private final DirectoryReader reader;
     private final org.apache.lucene.search.IndexSearcher searcher;

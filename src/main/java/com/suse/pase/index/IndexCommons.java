@@ -3,6 +3,7 @@ package com.suse.pase.index;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.util.CharTokenizer;
 
+/** Parts common to indexing and searching */
 class IndexCommons {
     static final String SOURCE_FIELD = "source";
     static final String PATH_FIELD = "path";
