@@ -1,0 +1,10 @@
+[Unit]
+Description=PaSe indexing
+Requires=pase-index.service
+
+[Timer]
+Unit=pase-index.service
+OnCalendar=daily
+
+[Install]
+WantedBy=timers.target

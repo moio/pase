@@ -1,0 +1,10 @@
+[Unit]
+Description=PaSe indexing
+Wants=pase-index.timer
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/pase index /srv/sources /srv/index
+
+[Install]
+WantedBy=multi-user.target

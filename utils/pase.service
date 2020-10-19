@@ -1,0 +1,8 @@
+[Unit]
+Description=PaSe Server
+
+[Service]
+ExecStart=/usr/bin/pase serve /srv/index
+
+[Install]
+WantedBy=multi-user.target
