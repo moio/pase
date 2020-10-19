@@ -20,7 +20,6 @@ public class DirectoryWalker {
 
     private final Path path;
     private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-    private final List<Future> futures = new LinkedList<>();
 
     public DirectoryWalker(Path path){
         this.path = path;
@@ -29,11 +28,13 @@ public class DirectoryWalker {
     /** Calls the consumer for all files in the directory. The consumer receives each file's path and a stream of its bytes. */
     public void withFilesIn(WalkerConsumer consumer) {
         try {
+            final List<Callable<Object>> todo = new LinkedList<>();
+
             Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
                 @Override
                 public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
                     if (attrs.isRegularFile() && !attrs.isSymbolicLink()) {
-                        futures.add(executor.submit(() -> {
+                        todo.add(() -> {
                             try (var fileStream = Files.newInputStream(path);
                                  var stream = new BufferedInputStream(fileStream, BUFFER_SIZE)) {
                                 consumer.accept(path, stream);
@@ -41,23 +42,16 @@ public class DirectoryWalker {
                             catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
-                        }));
+                            return Optional.empty();
+                        });
                     }
                     return FileVisitResult.CONTINUE;
                 }
             });
 
-            executor.shutdown();
-            futures.stream().forEach(f -> {
-                try {
-                    f.get();
-                }
-                catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            executor.invokeAll(todo);
         }
-        catch (IOException e) {
+        catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
