@@ -1,7 +1,6 @@
 package com.suse.pase.walkers;
 
 import java.io.BufferedInputStream;
-import java.nio.file.Path;
 import java.util.Optional;
 
 @FunctionalInterface
@@ -16,5 +15,5 @@ public interface WalkerConsumer {
      * @param stream the stream of bytes associated with path
      * @return true if the content is new to the index, false if it was already present
      */
-    boolean accept(Path path, String fingerprint, Optional<BufferedInputStream> stream);
+    boolean accept(String path, String fingerprint, Optional<BufferedInputStream> stream);
 }

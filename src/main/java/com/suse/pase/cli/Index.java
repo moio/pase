@@ -27,9 +27,7 @@ public class Index implements Callable<Integer> {
 
     public static void index(Path sourcePath, Path indexPath, int recursionLimit) throws Exception {
         try (var writer = new IndexWriter(indexPath)) {
-            new TextFileWalker(sourcePath, recursionLimit).withTextFilesIn((path, fingerprint, stream) -> {
-                return writer.add(path.toString(), fingerprint, stream);
-            });
+            new TextFileWalker(sourcePath, recursionLimit).withTextFilesIn(writer::add);
         }
     }
 }

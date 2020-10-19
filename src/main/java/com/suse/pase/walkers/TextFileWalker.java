@@ -30,10 +30,10 @@ public class TextFileWalker {
     public void withTextFilesIn(WalkerConsumer consumer) {
         new DirectoryWalker(root).withFilesIn((path, fingerprint, stream) -> {
             if (isText(path, stream)) {
-                consumer.accept(path, fingerprint, of(stream));
+                consumer.accept(path.toString(), fingerprint, of(stream));
             }
             else if (recursionLimit >=1) {
-                if (consumer.accept(path, fingerprint, empty())) {
+                if (consumer.accept(path.toString(), fingerprint, empty())) {
                     walkArchive(path, fingerprint, stream, recursionLimit, consumer);
                 }
             }
@@ -43,7 +43,7 @@ public class TextFileWalker {
     private void walkArchive(Path archivePath, String originalFingerprint, BufferedInputStream archiveStream, int recursionLevel, WalkerConsumer consumer) {
         new ArchiveWalker(archivePath, originalFingerprint, archiveStream).withFilesIn((path, fingerprint, stream) -> {
             if (isText(path, stream)) {
-                consumer.accept(path, fingerprint, of(stream));
+                consumer.accept(path.toString(), fingerprint, of(stream));
             }
             else if (recursionLevel > 1) {
                 walkArchive(path, fingerprint, stream, recursionLevel - 1, consumer);
