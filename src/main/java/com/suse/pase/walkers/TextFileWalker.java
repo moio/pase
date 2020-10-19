@@ -10,10 +10,7 @@ import java.util.logging.Logger;
  * Also visits any archives found in the directory, up to a specified recursion level of nested archives, and allows the same consumer to read any text file in them.
  */
 public class TextFileWalker {
-
     private static Logger LOG = Logger.getLogger(TextFileWalker.class.getName());
-    private static byte[] buf = new byte[4096];
-
     private final Path root;
     private final int recursionLimit;
 
@@ -50,15 +47,17 @@ public class TextFileWalker {
         });
     }
 
+
     private boolean isText(Path path, BufferedInputStream stream) {
         // same heuristic used by diff
         // https://dev.to/sharkdp/what-is-a-binary-file-2cf5
+
+        byte[] buf = new byte[4096];
         stream.mark(buf.length);
         try {
             var count = stream.read(buf, 0, buf.length);
             for (int i = 0; i < count; i++) {
                 if (buf[i] == 0) {
-                    stream.reset();
                     return false;
                 }
             }
