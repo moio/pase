@@ -2,7 +2,7 @@
 Description=PaSe Server
 
 [Service]
-ExecStart=/usr/bin/pase serve /srv/index
+ExecStart=/usr/bin/pase serve --port=80 /srv/index
 
 [Install]
 WantedBy=multi-user.target

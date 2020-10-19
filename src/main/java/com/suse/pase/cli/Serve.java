@@ -1,15 +1,17 @@
 package com.suse.pase.cli;
 
 import static java.util.stream.Collectors.toList;
+import static picocli.CommandLine.Option;
 import static spark.Spark.awaitInitialization;
 import static spark.Spark.exception;
-import static spark.Spark.staticFileLocation;
 import static spark.Spark.get;
+import static spark.Spark.port;
+import static spark.Spark.staticFileLocation;
 
 import com.github.difflib.unifieddiff.UnifiedDiffParserException;
 import com.google.gson.Gson;
-import com.suse.pase.index.IndexSearcher;
 import com.suse.pase.PatchParser;
+import com.suse.pase.index.IndexSearcher;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -22,18 +24,21 @@ import picocli.CommandLine.Parameters;
 
 @Command(name = "serve", description = "Serves the Web interface for searching")
 public class Serve implements Callable<Integer> {
+    @Option(names = { "-p", "--port" }, paramLabel = "PORT", defaultValue = "4567", description = "TCP port to serve from")
+    int port;
     @Parameters(index = "0", paramLabel = "INDEX_PATH", description = "directory with a pase index")
     Path indexPath;
 
     @Override
     public Integer call() throws Exception {
-        serve(indexPath);
+        serve(port, indexPath);
         return 0;
     }
 
-    public static void serve(Path indexPath) throws Exception {
+    public static void serve(int port, Path indexPath) throws Exception {
         Gson gson = new Gson();
         try (var searcher = new IndexSearcher(indexPath)) {
+            port(port);
             staticFileLocation("/htdocs");
             get("/search", (req, res) -> {
                 // HACK: for testing purposes, allow Javascript from any site to send requests
@@ -61,7 +66,7 @@ public class Serve implements Callable<Integer> {
             });
 
             awaitInitialization();
-            System.out.println("Access the Web UI at http://localhost:4567");
+            System.out.println("Access the Web UI at http://localhost:" + port);
 
             // Spark by default runs in separate daemon threads, but we do not
             // want the current thread to die or searcher will be GC'd.
