@@ -26,6 +26,7 @@ public class Index implements Callable<Integer> {
     }
 
     public static void index(Path sourcePath, Path indexPath, int recursionLimit) throws Exception {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$s] %5$s %n");
         try (var writer = new IndexWriter(indexPath)) {
             new DirectoryIndexer(sourcePath, recursionLimit, writer).index();
         }

@@ -56,7 +56,7 @@ public class IndexWriter implements AutoCloseable {
 
     /**
      * Adds a file to the index.
-     * @return true if the file was new to the index, false if it was already known or in case of errors
+     * @return true if the file was added the index, false if it was already known or in case of errors
      */
     public boolean add(String path, String fingerprint, Optional<BufferedInputStream> stream) {
         try {

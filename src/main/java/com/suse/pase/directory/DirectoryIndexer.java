@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.suse.pase.index.IndexWriter;
@@ -14,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 /**
@@ -26,6 +28,10 @@ public class DirectoryIndexer {
     private final Path root;
     private final int recursionLimit;
     private final IndexWriter index;
+    private final AtomicInteger processedFiles = new AtomicInteger();
+    private final AtomicInteger processedFilesInArchives = new AtomicInteger();
+    private final AtomicInteger updatedFiles = new AtomicInteger();
+    private final AtomicInteger updatedFilesInArchives = new AtomicInteger();
 
     public DirectoryIndexer(Path path, int recursionLimit, IndexWriter index) {
         this.root = path;
@@ -38,28 +44,61 @@ public class DirectoryIndexer {
      * up to the specified recursion level of nested archives.
      */
     public void index() {
+        Stopwatch timer = Stopwatch.createStarted();
         new DirectoryWalker(root).walkFiles((path, stream) -> {
             var fingerprint = fingerprint(path);
             if (isText(path, stream)) {
-                index.add(path.toString(), fingerprint, of(stream));
+                if(index.add(path.toString(), fingerprint, of(stream))){
+                    logAdvancement(false, true);
+                };
             }
             else if (recursionLimit >=1) {
                 if (index.add(path.toString(), fingerprint, empty())) {
                     indexArchive(path, fingerprint, stream, recursionLimit);
                 }
             }
+            logAdvancement(false, false);
         });
+        var endTime = System.currentTimeMillis();
+
+        LOG.info("Indexing completed!");
+        LOG.info("Total processed files: " + processedFiles.get());
+        LOG.info("  - of which in archives: " + processedFilesInArchives.get());
+        LOG.info("Updated text files in the index: " + updatedFiles.get());
+        LOG.info("  - of which in archives: " + updatedFilesInArchives.get());
+        LOG.info("Indexing time: " + timer.stop());
     }
 
     private void indexArchive(Path archivePath, String fingerprint, BufferedInputStream archiveStream, int recursionLevel) {
         new ArchiveWalker(archivePath, archiveStream).walkArchiveFiles((path, stream) -> {
             if (isText(path, stream)) {
-                index.add(path.toString(), fingerprint, of(stream));
+                if (index.add(path.toString(), fingerprint, of(stream))) {
+                    logAdvancement(true, true);
+                }
             }
             else if (recursionLevel > 1) {
                 indexArchive(path, fingerprint, stream, recursionLevel - 1);
             }
+            logAdvancement(true, false);
         });
+    }
+
+    private void logAdvancement(boolean inArchive, boolean updated) {
+        if (inArchive && updated) {
+            updatedFilesInArchives.incrementAndGet();
+        }
+        if (inArchive && !updated) {
+            processedFilesInArchives.incrementAndGet();
+        }
+        if (!inArchive && updated) {
+            updatedFiles.incrementAndGet();
+        }
+        if (!inArchive && !updated) {
+            var total = processedFiles.incrementAndGet();
+            if (total > 0 && total % 1000 == 0) {
+                LOG.info("Total files processed so far: " + processedFiles.get());
+            }
+        }
     }
 
     /** Returns a string that changes when the file pointed by path changes */
