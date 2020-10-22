@@ -48,23 +48,34 @@ public class DirectoryIndexer {
         new DirectoryWalker(root).walkFiles((path, stream) -> {
             var fingerprint = fingerprint(path);
             if (isText(path, stream)) {
-                if(index.add(path.toString(), fingerprint, of(stream))){
-                    logAdvancement(false, true);
-                };
-            }
-            else if (recursionLimit >=1) {
-                if (index.add(path.toString(), fingerprint, empty())) {
-                    indexArchive(path, fingerprint, stream, recursionLimit);
+                if (index.add(path.toString(), fingerprint, of(stream))) {
+                    logProcessedFile(false, true);
+                }
+                else {
+                    logProcessedFile(false, false);
                 }
             }
-            logAdvancement(false, false);
+            else {
+                if (recursionLimit >=1) {
+                    if (index.add(path.toString(), fingerprint, empty())) {
+                        indexArchive(path, fingerprint, stream, recursionLimit);
+                        logProcessedFile(false, true);
+                    }
+                    else {
+                        logProcessedFile(false, false);
+                    }
+                }
+                else {
+                    logProcessedFile(false, false);
+                }
+            }
         });
         var endTime = System.currentTimeMillis();
 
         LOG.info("Indexing completed!");
         LOG.info("Total processed files: " + processedFiles.get());
         LOG.info("  - of which in archives: " + processedFilesInArchives.get());
-        LOG.info("Updated text files in the index: " + updatedFiles.get());
+        LOG.info("Updated files in the index: " + updatedFiles.get());
         LOG.info("  - of which in archives: " + updatedFilesInArchives.get());
         LOG.info("Indexing time: " + timer.stop());
     }
@@ -73,30 +84,36 @@ public class DirectoryIndexer {
         new ArchiveWalker(archivePath, archiveStream).walkArchiveFiles((path, stream) -> {
             if (isText(path, stream)) {
                 if (index.add(path.toString(), fingerprint, of(stream))) {
-                    logAdvancement(true, true);
+                    logProcessedFile(true, true);
+                }
+                else {
+                    logProcessedFile(true, false);
                 }
             }
-            else if (recursionLevel > 1) {
-                indexArchive(path, fingerprint, stream, recursionLevel - 1);
+            else {
+                if (recursionLevel > 1) {
+                    indexArchive(path, fingerprint, stream, recursionLevel - 1);
+                }
+                logProcessedFile(true, false);
             }
-            logAdvancement(true, false);
         });
     }
 
-    private void logAdvancement(boolean inArchive, boolean updated) {
-        if (inArchive && updated) {
-            updatedFilesInArchives.incrementAndGet();
+    private void logProcessedFile(boolean inArchive, boolean updated) {
+        var current = processedFiles.incrementAndGet();
+        if (current > 0 && current % 1000 == 0) {
+            LOG.info("Total files processed so far: " + current);
         }
-        if (inArchive && !updated) {
+
+        if (inArchive) {
             processedFilesInArchives.incrementAndGet();
         }
-        if (!inArchive && updated) {
+
+        if (updated) {
             updatedFiles.incrementAndGet();
-        }
-        if (!inArchive && !updated) {
-            var total = processedFiles.incrementAndGet();
-            if (total > 0 && total % 1000 == 0) {
-                LOG.info("Total files processed so far: " + processedFiles.get());
+
+            if (inArchive) {
+                updatedFilesInArchives.incrementAndGet();
             }
         }
     }
