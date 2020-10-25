@@ -7,7 +7,7 @@ import org.apache.lucene.analysis.util.CharTokenizer;
 class IndexCommons {
     static final String SOURCE_FIELD = "source";
     static final String PATH_FIELD = "path";
-    static final String PATH_FINGERPRINT_FIELD = "path_fingerprint";
+    static final String FINGERPRINT_FIELD = "fingerprint";
     static final String LAST_UPDATED_FIELD = "last_updated";
 
 

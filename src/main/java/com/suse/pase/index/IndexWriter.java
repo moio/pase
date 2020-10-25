@@ -1,10 +1,12 @@
 package com.suse.pase.index;
 
+import static com.suse.pase.index.IndexCommons.FINGERPRINT_FIELD;
 import static com.suse.pase.index.IndexCommons.LAST_UPDATED_FIELD;
 import static com.suse.pase.index.IndexCommons.PATH_FIELD;
-import static com.suse.pase.index.IndexCommons.PATH_FINGERPRINT_FIELD;
 import static com.suse.pase.index.IndexCommons.SOURCE_FIELD;
+import static java.util.Collections.singleton;
 import static org.apache.lucene.index.IndexWriterConfig.OpenMode.CREATE_OR_APPEND;
+import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 
 import com.suse.pase.index.IndexCommons.SourceAnalyzer;
 
@@ -16,6 +18,8 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.FSDirectory;
 
@@ -61,19 +65,29 @@ public class IndexWriter implements AutoCloseable {
     public boolean add(String path, String fingerprint, Optional<BufferedInputStream> stream) {
         try {
             // if we already have this file and content did not change, mark it as updated
-            var pathFingerprint = new Term(PATH_FINGERPRINT_FIELD, path + ":" + fingerprint);
+            var pathQuery = new PrefixQuery(new Term(PATH_FIELD, path));
+            var fingerprintQuery = new TermQuery(new Term(FINGERPRINT_FIELD, fingerprint));
 
-            var results = searcher.search(new TermQuery(pathFingerprint), 1);
-            if (results.scoreDocs.length > 0) {
-                writer.updateNumericDocValue(pathFingerprint, LAST_UPDATED_FIELD, lastUpdated);
+            var query = new BooleanQuery.Builder()
+                    .add(pathQuery, MUST)
+                    .add(fingerprintQuery, MUST)
+                    .build();
+
+            var results = searcher.search(query, Integer.MAX_VALUE);
+            if (results.totalHits.value > 0) {
+                for (int i = 0; i < results.scoreDocs.length; i++) {
+                    var doc = searcher.doc(results.scoreDocs[i].doc, singleton(PATH_FIELD));
+                    var docPath = doc.getField(PATH_FIELD).stringValue();
+                    writer.updateNumericDocValue(new Term(PATH_FIELD, docPath), LAST_UPDATED_FIELD, lastUpdated);
+                }
                 return false;
             }
 
             // otherwise make a new, empty document
             Document doc = new Document();
 
-            // Add the path and fingerprint of the file as an indexed (i.e. searchable), but not tokenized field
-            doc.add(new StringField(PATH_FINGERPRINT_FIELD, pathFingerprint.text(), Field.Store.YES));
+            // Add the fingerprint of the file as an indexed (i.e. searchable), but not tokenized field
+            doc.add(new StringField(FINGERPRINT_FIELD, fingerprint, Field.Store.YES));
 
             // Add the path of the file as an indexed (i.e. searchable), but not tokenized field
             doc.add(new StringField(PATH_FIELD, path, Field.Store.YES));
