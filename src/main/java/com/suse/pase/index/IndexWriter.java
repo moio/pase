@@ -11,7 +11,7 @@ import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 import com.suse.pase.index.IndexCommons.SourceAnalyzer;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
@@ -87,10 +87,10 @@ public class IndexWriter implements AutoCloseable {
             Document doc = new Document();
 
             // Add the fingerprint of the file as an indexed (i.e. searchable), but not tokenized field
-            doc.add(new StringField(FINGERPRINT_FIELD, fingerprint, Field.Store.YES));
+            doc.add(new StringField(FINGERPRINT_FIELD, fingerprint, Store.YES));
 
             // Add the path of the file as an indexed (i.e. searchable), but not tokenized field
-            doc.add(new StringField(PATH_FIELD, path, Field.Store.YES));
+            doc.add(new StringField(PATH_FIELD, path, Store.YES));
 
             // Add the last update time a DocValue field
             // Those are not indexed nor tokenized but they are updatable
