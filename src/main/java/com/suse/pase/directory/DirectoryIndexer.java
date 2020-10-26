@@ -126,6 +126,8 @@ public class DirectoryIndexer {
             Hasher hasher = Hashing.sha256().newHasher();
             var attributes = Files.readAttributes(path, PosixFileAttributes.class);
 
+            // path
+            hasher.putString(path.toString(), UTF_8);
             // mtime
             hasher.putLong(attributes.lastModifiedTime().toMillis());
             // size
