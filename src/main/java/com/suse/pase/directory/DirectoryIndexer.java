@@ -101,7 +101,7 @@ public class DirectoryIndexer {
 
     private void logProcessedFile(boolean inArchive, boolean updated) {
         var current = processedFiles.incrementAndGet();
-        if (current > 0 && current % 1000 == 0) {
+        if (current > 0 && current % 10000 == 0) {
             LOG.info("Total files processed so far: " + current);
         }
 
