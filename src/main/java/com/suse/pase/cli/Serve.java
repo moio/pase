@@ -4,8 +4,8 @@ import static java.util.stream.Collectors.toList;
 import static picocli.CommandLine.Option;
 import static spark.Spark.awaitInitialization;
 import static spark.Spark.exception;
-import static spark.Spark.get;
 import static spark.Spark.port;
+import static spark.Spark.post;
 import static spark.Spark.staticFileLocation;
 
 import com.github.difflib.unifieddiff.UnifiedDiffParserException;
@@ -40,11 +40,11 @@ public class Serve implements Callable<Integer> {
         try (var searcher = new IndexSearcher(indexPath)) {
             port(port);
             staticFileLocation("/htdocs");
-            get("/search", (req, res) -> {
+            post("/search", (req, res) -> {
                 // HACK: for testing purposes, allow Javascript from any site to send requests
                 res.header("Access-Control-Allow-Origin", "*");
 
-                var patch = req.queryParams("patch");
+                var patch = req.body();
                 var inputStream = new ByteArrayInputStream(patch.getBytes(StandardCharsets.UTF_8));
 
                 var results = PatchParser.parsePatch(inputStream).stream()

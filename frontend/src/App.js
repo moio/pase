@@ -20,12 +20,15 @@ function App() {
   }
 
   const search = async (patch) => {
-    const param = encodeURIComponent(patch)
-
     try {
-      const response = await fetch("/search?patch=" + param)
-      const results = await response.json()
-      setState({patch: patch, results: results, error: !response.ok})
+      const response = await fetch("/search", { method: "POST", body: patch })
+      const text = await response.text()
+      if (response.ok) {
+        setState({patch: patch, results: JSON.parse(text), error: false})
+      }
+      else {
+        setState({patch: patch, results: [text], error: !response.ok})
+      }
     } catch (error) {
       setState({patch: patch, results: error.message, error: true})
     }
@@ -57,7 +60,13 @@ function App() {
 
 function ResultBox(props) {
   if (props.error) {
-    return <p> {props.results}</p>
+    return <p>{props.results}</p>
+  }
+  if (props.results == null) {
+    return;
+  }
+  if (props.results != 0) {
+    return <p>No results found.</p>
   }
   return (
     <ul>
