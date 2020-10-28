@@ -56,10 +56,6 @@ pase_launcher:
     - mode: 777
     - makedirs: True
 
-prime_index:
-  cmd.run:
-    - name: pase index /dev/null /srv/index
-
 pase_index_service:
   file.managed:
     - name: /etc/systemd/system/pase-index.service
