@@ -65,7 +65,7 @@ function ResultBox(props) {
   if (props.results == null) {
     return;
   }
-  if (props.results != 0) {
+  if (props.results !== 0) {
     return <p>No results found.</p>
   }
   return (
