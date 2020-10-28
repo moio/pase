@@ -21,9 +21,14 @@ function App() {
 
   const search = async (patch) => {
     const param = encodeURIComponent(patch)
-    const response = await fetch("/search?patch=" + param)
-    const results = await response.json()
-    setState({patch: patch, results: results, error: !response.ok})
+
+    try {
+      const response = await fetch("/search?patch=" + param)
+      const results = await response.json()
+      setState({patch: patch, results: results, error: !response.ok})
+    } catch (error) {
+      setState({patch: patch, results: error.message, error: true})
+    }
   }
   
   return (
