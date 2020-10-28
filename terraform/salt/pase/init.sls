@@ -33,14 +33,9 @@ pase_repo_updated:
     - name: git pull --rebase
     - cwd: /opt/pase
 
-pase_frontend_built:
-  cmd.run:
-    - name: npm install; npm run build; rm -rf ../src/main/resources/htdocs/*; mkdir -p ../src/main/resources/htdocs; cp -rf ./build/* ../src/main/resources/htdocs/
-    - cwd: /opt/pase/frontend
-
 pase_built:
   cmd.run:
-    - name: mvn clean install
+    - name: /opt/pase/build.sh
     - cwd: /opt/pase
 
 pase_launcher:
@@ -86,6 +81,8 @@ pase_service:
   service.running:
     - name: pase
     - enable: True
+    - watch:
+      - cmd: pase_built
 
 motd:
   file.managed:

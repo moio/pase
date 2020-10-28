@@ -1,10 +1,11 @@
 ## Building
  - install JDK 11 (tested with openJDK)
  - install a recent Maven version (tested with 3.6.1)
+ - install a recent npm version (tested with 6.14.4)
 
 To build, execute:
 ```
-mvn clean install
+./build.sh
 ```
 
 Executable jar will be produced in `target/pase-<version>.jar`
