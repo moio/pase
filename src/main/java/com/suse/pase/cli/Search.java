@@ -1,14 +1,13 @@
 package com.suse.pase.cli;
 
-import static java.util.stream.Collectors.toList;
-
-import com.suse.pase.index.IndexSearcher;
 import com.suse.pase.PatchParser;
 import com.suse.pase.QueryResult;
+import com.suse.pase.index.IndexSearcher;
 
 import java.io.FileInputStream;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import picocli.CommandLine.Command;
@@ -28,18 +27,38 @@ public class Search implements Callable<Integer> {
         return 0;
     }
 
-    public static List<QueryResult> search(Path indexPath, Path patchPath) throws Exception {
+    public static Map<String, List<List<QueryResult>>> search(Path indexPath, Path patchPath) throws Exception {
         try (var searcher = new IndexSearcher(indexPath); var fis = new FileInputStream(patchPath.toString())) {
-            return PatchParser.parsePatch(fis).stream()
-                    .map(searcher::search)
-                    .flatMap(List::stream)
-                    .collect(toList());
+            return searcher.search(PatchParser.parsePatch(fis));
         }
     }
 
-    private void printResults(List<QueryResult> results) {
-        for (var result:results) {
-            System.out.println(result);
-        }
+    private void printResults(Map<String, List<List<QueryResult>>> results) {
+        results.keySet().stream()
+                .sorted()
+                .forEach(path -> {
+                    System.out.println(path + ":");
+
+                    var fileResults = results.get(path);
+                    if (fileResults.stream().allMatch(chunkResult -> chunkResult.isEmpty())) {
+                        System.out.println("   (no results found)");
+                    }
+                    else {
+                        for (int i = 0; i < fileResults.size(); i++) {
+                            System.out.printf("  - chunk #%d:\n", i+1);
+
+                            var chunkResults = fileResults.get(i);
+
+                            if (chunkResults.isEmpty()) {
+                                System.out.println("      (no results found)");
+                            }
+                            else {
+                                chunkResults.stream().forEach(result -> {
+                                    System.out.printf("    - %s (score: %d)\n", result.path , (long)Math.round(result.score));
+                                });
+                            }
+                        }
+                    }
+                });
     }
 }

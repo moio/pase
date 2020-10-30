@@ -59,22 +59,41 @@ function App() {
 }
 
 function ResultBox(props) {
-  if (props.error) {
-    return <p>Error: {props.results}</p>
-  }
   if (props.results == null) {
     return null;
   }
-  if (props.results.length === 0) {
-    return <p>No results found.</p>
+  if (props.error) {
+    return <p>Error: {props.results}</p>
   }
   return (
     <ul>
-      {props.results.map((r, i) => {
-        return <li key={i}>{r.path}</li>
+      {Object.keys(props.results).map(file => {
+        return <li key={file}>{file}: <FileResults fileResults={props.results[file]} /></li>
       })}
     </ul>
   );  
+}
+
+function FileResults(props) {
+  if (props.fileResults.every(chunkResults => chunkResults.length === 0)) {
+    return <em>no results found</em>
+  }
+  return (
+    <ul>
+      {props.fileResults.map((chunkResults, i) => <li key={"chunk-" + (i + 1)}>chunk #{i+1}: <ChunkResults chunkResults={chunkResults} /></li>)}
+    </ul>
+  );
+}
+
+function ChunkResults(props) {
+  if (props.chunkResults.length === 0) {
+    return <em>no results found</em>
+  }
+  return (
+    <ul>
+      {props.chunkResults.map((chunkResult, i) => <li key={"chunk-" + i}>{chunkResult.path} (score: {chunkResult.score.toFixed(0)})</li>)}
+    </ul>
+  );
 }
 
 export default App;

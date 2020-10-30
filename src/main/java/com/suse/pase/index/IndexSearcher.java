@@ -5,6 +5,7 @@ import static com.suse.pase.index.IndexCommons.SOURCE_FIELD;
 import static java.util.Arrays.stream;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 import com.suse.pase.FileQuery;
 import com.suse.pase.QueryResult;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /** Encapsulates Lucene details about searching indexes */
 public class IndexSearcher implements AutoCloseable {
@@ -32,12 +34,17 @@ public class IndexSearcher implements AutoCloseable {
         searcher = new org.apache.lucene.search.IndexSearcher(reader);
     }
 
-    /** Searches the index for a file */
-    public List<QueryResult> search(FileQuery fileQuery) {
-        return fileQuery.getChunks().stream()
-                .map(this::search)
-                .flatMap(List::stream)
-                .collect(toList());
+    /** Searches the index for a file
+     * @return a map from filename (as specified in the patch) to list of results (ordered by chunk)
+     */
+    public Map<String, List<List<QueryResult>>> search(List<FileQuery> fileQueries) {
+        return fileQueries.stream()
+                .collect(toMap(
+                        fq -> fq.getFile(),
+                        fq -> fq.getChunks().stream()
+                            .map(this::search)
+                            .collect(toList())
+                ));
     }
 
     /** Searches the index for a chunk */

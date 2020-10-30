@@ -1,6 +1,5 @@
 package com.suse.pase.cli;
 
-import static java.util.stream.Collectors.toList;
 import static picocli.CommandLine.Option;
 import static spark.Spark.awaitInitialization;
 import static spark.Spark.exception;
@@ -16,7 +15,6 @@ import com.suse.pase.index.IndexSearcher;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import picocli.CommandLine.Command;
@@ -47,10 +45,7 @@ public class Serve implements Callable<Integer> {
                 var patch = req.body();
                 var inputStream = new ByteArrayInputStream(patch.getBytes(StandardCharsets.UTF_8));
 
-                var results = PatchParser.parsePatch(inputStream).stream()
-                    .map(searcher::search)
-                    .flatMap(List::stream)
-                    .collect(toList());
+                var results = searcher.search(PatchParser.parsePatch(inputStream));
 
                 return results;
             }, gson::toJson);
