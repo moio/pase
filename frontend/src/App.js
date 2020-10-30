@@ -2,7 +2,7 @@ import React, {useState} from 'react'
 import Dropzone from 'react-dropzone'
 
 function App() {
-  const [state, setState] = useState({patch: "", results: [], error: false})
+  const [state, setState] = useState({patch: "", results: null, error: false})
 
   const onChange = event => {
     setState({patch: event.target.value, results: state.results, error: state.error})
@@ -27,7 +27,7 @@ function App() {
         setState({patch: patch, results: JSON.parse(text), error: false})
       }
       else {
-        setState({patch: patch, results: [text], error: !response.ok})
+        setState({patch: patch, results: text, error: !response.ok})
       }
     } catch (error) {
       setState({patch: patch, results: error.message, error: true})
@@ -60,12 +60,12 @@ function App() {
 
 function ResultBox(props) {
   if (props.error) {
-    return <p>{props.results}</p>
+    return <p>Error: {props.results}</p>
   }
   if (props.results == null) {
-    return;
+    return null;
   }
-  if (props.results !== 0) {
+  if (props.results.length === 0) {
     return <p>No results found.</p>
   }
   return (

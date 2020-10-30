@@ -57,7 +57,7 @@ public class Serve implements Callable<Integer> {
 
             exception(UnifiedDiffParserException.class, (exception, request, response) -> {
                 response.status(400);
-                response.body("\"Unable to parse the patch\"");
+                response.body("Unable to parse the patch");
             });
 
             exception(Exception.class, (exception, request, response) -> {
