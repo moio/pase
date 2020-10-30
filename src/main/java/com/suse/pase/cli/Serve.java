@@ -35,7 +35,7 @@ public class Serve implements Callable<Integer> {
 
     public static void serve(int port, Path indexPath) throws Exception {
         Gson gson = new Gson();
-        try (var searcher = new IndexSearcher(indexPath)) {
+        try (var searcher = new IndexSearcher(indexPath, false)) {
             port(port);
             staticFileLocation("/htdocs");
             post("/search", (req, res) -> {

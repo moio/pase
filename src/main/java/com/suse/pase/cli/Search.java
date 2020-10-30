@@ -1,5 +1,7 @@
 package com.suse.pase.cli;
 
+import static picocli.CommandLine.*;
+
 import com.suse.pase.PatchParser;
 import com.suse.pase.QueryResult;
 import com.suse.pase.index.IndexSearcher;
@@ -15,20 +17,24 @@ import picocli.CommandLine.Parameters;
 
 @Command(name = "search", description = "Search for a patch")
 public class Search implements Callable<Integer> {
+    @Option(names = { "-e", "--explain" }, paramLabel = "EXPLAIN", defaultValue = "false", description = "Log debug information about scores")
+    boolean explain;
+
     @Parameters(index = "0", paramLabel = "INDEX_PATH", description = "directory with a pase index")
     Path indexPath;
 
     @Parameters(index = "1", paramLabel = "PATCH_PATH", description = "patch file to search")
     Path patchPath;
 
+
     @Override
     public Integer call() throws Exception {
-        printResults(search(indexPath, patchPath));
+        printResults(search(indexPath, patchPath, explain));
         return 0;
     }
 
-    public static Map<String, List<List<QueryResult>>> search(Path indexPath, Path patchPath) throws Exception {
-        try (var searcher = new IndexSearcher(indexPath); var fis = new FileInputStream(patchPath.toString())) {
+    public static Map<String, List<List<QueryResult>>> search(Path indexPath, Path patchPath, boolean explain) throws Exception {
+        try (var searcher = new IndexSearcher(indexPath, explain); var fis = new FileInputStream(patchPath.toString())) {
             return searcher.search(PatchParser.parsePatch(fis));
         }
     }

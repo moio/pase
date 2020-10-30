@@ -22,16 +22,21 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /** Encapsulates Lucene details about searching indexes */
 public class IndexSearcher implements AutoCloseable {
+    private static Logger LOG = Logger.getLogger(IndexSearcher.class.getName());
+
     private final DirectoryReader reader;
     private final org.apache.lucene.search.IndexSearcher searcher;
+    private final boolean explain;
     private final int HIT_LIMIT = 5;
 
-    public IndexSearcher(Path path) throws IOException {
-        reader = DirectoryReader.open(FSDirectory.open(path));
-        searcher = new org.apache.lucene.search.IndexSearcher(reader);
+    public IndexSearcher(Path path, boolean explain) throws IOException {
+        this.reader = DirectoryReader.open(FSDirectory.open(path));
+        this.searcher = new org.apache.lucene.search.IndexSearcher(reader);
+        this.explain = explain;
     }
 
     /** Searches the index for a file
@@ -72,6 +77,10 @@ public class IndexSearcher implements AutoCloseable {
                         try {
                             var doc = searcher.doc(scoreDoc.doc, singleton(PATH_FIELD));
                             var path = doc.getField(PATH_FIELD).stringValue();
+                            if (explain) {
+                                LOG.info("Score explanation for: " + path + " (score: " + scoreDoc.score + ")");
+                                LOG.info(searcher.explain(query, scoreDoc.doc).toString());
+                            }
                             return new QueryResult(path, scoreDoc.score);
                         }
                         catch (IOException e) {
