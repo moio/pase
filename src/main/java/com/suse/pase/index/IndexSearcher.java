@@ -35,7 +35,7 @@ public class IndexSearcher implements AutoCloseable {
     private final DirectoryReader reader;
     private final org.apache.lucene.search.IndexSearcher searcher;
     private final boolean explain;
-    private final int HIT_LIMIT = 5;
+    private final int HIT_LIMIT = 50;
 
     public IndexSearcher(Path path, boolean explain) throws IOException {
         this.reader = DirectoryReader.open(FSDirectory.open(path));
