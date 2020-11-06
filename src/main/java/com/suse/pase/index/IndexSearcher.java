@@ -51,7 +51,7 @@ public class IndexSearcher implements AutoCloseable {
     private final org.apache.lucene.search.IndexSearcher searcher;
     private final boolean explain;
     private final double minTermScore;
-    
+
     public IndexSearcher(Path path, boolean explain) throws IOException {
         this.reader = DirectoryReader.open(FSDirectory.open(path));
         this.searcher = new org.apache.lucene.search.IndexSearcher(reader);

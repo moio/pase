@@ -16,12 +16,10 @@ patch = open(argv[1])
 results = pase_search(patch)
 
 print("%d results found" % len(results))
-for file, file_results in results.items():
+for file, results in results.items():
     print(file)
-    for i, chunk_results in enumerate(file_results):
-        print("  - chunk #%d" % (i + 1))
-        if chunk_results:
-            for chunk_result in chunk_results:
-                print("      %s (score: %d)" % (chunk_result["path"], chunk_result["score"]))
-        else:
-            print("      no results")
+    if results:
+        for result in results:
+            print("  %s (score: %d)" % (result["path"], result["score"]))
+    else:
+        print("  no results")
