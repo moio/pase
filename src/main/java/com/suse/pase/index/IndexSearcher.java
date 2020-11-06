@@ -18,6 +18,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.store.FSDirectory;
 
 import java.io.IOException;
@@ -39,6 +40,10 @@ public class IndexSearcher implements AutoCloseable {
     public IndexSearcher(Path path, boolean explain) throws IOException {
         this.reader = DirectoryReader.open(FSDirectory.open(path));
         this.searcher = new org.apache.lucene.search.IndexSearcher(reader);
+        // what we really want here is IDF, without any term frequency part
+        // setting k1 = 0 (and b to any value) simplifies the formula to a pure IDF
+        // https://en.wikipedia.org/wiki/Okapi_BM25
+        this.searcher.setSimilarity(new BM25Similarity(0,0));
         this.explain = explain;
     }
 
