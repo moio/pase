@@ -75,23 +75,12 @@ function ResultBox(props) {
 }
 
 function FileResults(props) {
-  if (props.fileResults.every(chunkResults => chunkResults.length === 0)) {
+  if (props.fileResults.length === 0) {
     return <em>no results found</em>
   }
   return (
     <ul>
-      {props.fileResults.map((chunkResults, i) => <li key={"chunk-" + (i + 1)}>chunk #{i+1}: <ChunkResults chunkResults={chunkResults} /></li>)}
-    </ul>
-  );
-}
-
-function ChunkResults(props) {
-  if (props.chunkResults.length === 0) {
-    return <em>no results found</em>
-  }
-  return (
-    <ul>
-      {props.chunkResults.map((chunkResult, i) => <li key={"chunk-" + i}>{chunkResult.path} (score: {chunkResult.score.toFixed(0)})</li>)}
+      {props.fileResults.map(result => <li key={"file-" + result}>{result.path} (score: {result.score.toFixed(0)})</li>)}
     </ul>
   );
 }

@@ -6,6 +6,7 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
 
 import com.suse.pase.FileQuery;
 import com.suse.pase.QueryResult;
@@ -14,7 +15,9 @@ import com.suse.pase.index.IndexCommons.SourceAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.PhraseQuery;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.store.FSDirectory;
 
 import java.io.IOException;
@@ -40,35 +43,20 @@ public class IndexSearcher implements AutoCloseable {
     }
 
     /** Searches the index for a file
-     * @return a map from filename (as specified in the patch) to list of results (ordered by chunk)
+     * @return a map from filename (as specified in the patch) to list of results
      */
-    public Map<String, List<List<QueryResult>>> search(List<FileQuery> fileQueries) {
+    public Map<String, List<QueryResult>> search(List<FileQuery> fileQueries) {
         return fileQueries.stream()
                 .collect(toMap(
                         fq -> fq.getFile(),
-                        fq -> fq.getChunks().stream()
-                            .map(this::search)
-                            .collect(toList())
+                        fq -> searchImpl(fq.getChunks())
                 ));
     }
 
-    /** Searches the index for a chunk */
-    private List<QueryResult> search(String chunk) {
+    /** Searches the index for a patch (list of chunks */
+    private List<QueryResult> searchImpl(List<String> chunks) {
         try {
-            var analyzer = new SourceAnalyzer();
-
-            var tokens = new LinkedList<String>();
-            try (var tokenStream  = analyzer.tokenStream(SOURCE_FIELD, chunk)){
-                tokenStream.reset();  // required
-                while (tokenStream.incrementToken()) {
-                    tokens.add(tokenStream.getAttribute(CharTermAttribute.class).toString());
-                }
-            }
-
-            var query = tokens.stream()
-                    .map(t -> new Term(SOURCE_FIELD, t))
-                    .reduce(new PhraseQuery.Builder(), (builder, term) -> builder.add(term), (b1,b2) -> b2)
-                    .build();
+            var query = buildQuery(chunks);
 
             var results = searcher.search(query, HIT_LIMIT);
 
@@ -92,6 +80,35 @@ public class IndexSearcher implements AutoCloseable {
         catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Query buildQuery(List<String> chunks) throws IOException {
+        return chunks.stream()
+                .map(this::buildQuery)
+                .reduce(new BooleanQuery.Builder(), (builder, query) -> builder.add(query, SHOULD), (b1, b2) -> b2)
+                .build();
+    }
+
+    private Query buildQuery(String chunk) {
+        var analyzer = new SourceAnalyzer();
+
+        var tokens = new LinkedList<String>();
+        try {
+            try (var tokenStream  = analyzer.tokenStream(SOURCE_FIELD, chunk)){
+                tokenStream.reset();  // required
+                while (tokenStream.incrementToken()) {
+                    tokens.add(tokenStream.getAttribute(CharTermAttribute.class).toString());
+                }
+            }
+        }
+        catch (IOException e) {
+            // cannot really happen, as it's all in-memory operations
+        }
+
+        return tokens.stream()
+                .map(t -> new Term(SOURCE_FIELD, t))
+                .reduce(new PhraseQuery.Builder(), (builder, term) -> builder.add(term), (b1,b2) -> b2)
+                .build();
     }
 
     @Override

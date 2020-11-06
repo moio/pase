@@ -38,17 +38,17 @@ public class MainTest {
         var results = Search.search(indexPath, patchPath, false);
         assertEquals(3, results.size());
 
-        var first = results.get("core/src/main/java/org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest.java").get(0).get(0);
+        var first = results.get("core/src/main/java/org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest.java").get(0);
         assertTrue(first.path.endsWith("multipart/JakartaMultiPartRequest.java"));
-        assertEquals(7.901535, first.score, 0.01);
+        assertEquals(29.856096267700195, first.score, 0.01);
 
-        var second = results.get("core/src/main/java/org/apache/struts2/dispatcher/multipart/JakartaStreamMultiPartRequest.java").get(0).get(0);
+        var second = results.get("core/src/main/java/org/apache/struts2/dispatcher/multipart/JakartaStreamMultiPartRequest.java").get(0);
         assertTrue(second.path.endsWith("multipart/JakartaStreamMultiPartRequest.java"));
-        assertEquals(6.463032, second.score, 0.01);
+        assertEquals(33.36137390136719, second.score, 0.01);
 
-        var third = results.get("core/src/main/java/org/apache/struts2/dispatcher/multipart/MultiPartRequestWrapper.java").get(0).get(0);
+        var third = results.get("core/src/main/java/org/apache/struts2/dispatcher/multipart/MultiPartRequestWrapper.java").get(0);
         assertTrue(third.path.endsWith("multipart/MultiPartRequestWrapper.java"));
-        assertEquals(8.004337, third.score, 0.01);
+        assertEquals(23.785358428955078, third.score, 0.01);
     }
 
     @AfterAll

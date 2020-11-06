@@ -33,37 +33,26 @@ public class Search implements Callable<Integer> {
         return 0;
     }
 
-    public static Map<String, List<List<QueryResult>>> search(Path indexPath, Path patchPath, boolean explain) throws Exception {
+    public static Map<String, List<QueryResult>> search(Path indexPath, Path patchPath, boolean explain) throws Exception {
         try (var searcher = new IndexSearcher(indexPath, explain); var fis = new FileInputStream(patchPath.toString())) {
             return searcher.search(PatchParser.parsePatch(fis));
         }
     }
 
-    private void printResults(Map<String, List<List<QueryResult>>> results) {
+    private void printResults(Map<String, List<QueryResult>> results) {
         results.keySet().stream()
                 .sorted()
                 .forEach(path -> {
                     System.out.println(path + ":");
 
                     var fileResults = results.get(path);
-                    if (fileResults.stream().allMatch(chunkResult -> chunkResult.isEmpty())) {
+                    if (fileResults.isEmpty()) {
                         System.out.println("   (no results found)");
                     }
                     else {
-                        for (int i = 0; i < fileResults.size(); i++) {
-                            System.out.printf("  - chunk #%d:\n", i+1);
-
-                            var chunkResults = fileResults.get(i);
-
-                            if (chunkResults.isEmpty()) {
-                                System.out.println("      (no results found)");
-                            }
-                            else {
-                                chunkResults.stream().forEach(result -> {
-                                    System.out.printf("    - %s (score: %d)\n", result.path , (long)Math.round(result.score));
-                                });
-                            }
-                        }
+                        fileResults.forEach(result -> {
+                            System.out.printf("    - %s (score: %d)\n", result.path , (long)Math.round(result.score));
+                        });
                     }
                 });
     }
