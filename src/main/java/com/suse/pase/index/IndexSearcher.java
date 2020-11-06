@@ -23,20 +23,35 @@ import org.apache.lucene.store.FSDirectory;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /** Encapsulates Lucene details about searching indexes */
 public class IndexSearcher implements AutoCloseable {
-    private static Logger LOG = Logger.getLogger(IndexSearcher.class.getName());
 
+    /** Maximum number of results per file */
+    private final int HIT_LIMIT = 50;
+
+    /**
+     * Document frequency cutoff percentage, this is used to filter queries with over-popular results.
+     *
+     * We define a "cutoff score" as the score of a file with n lines, all of which are present in 10% of the indexed
+     * files or more.
+     *
+     * Any result scoring worse than that will be cut off.
+     */
+    private static final double P = 0.1;
+
+    private static Logger LOG = Logger.getLogger(IndexSearcher.class.getName());
     private final DirectoryReader reader;
     private final org.apache.lucene.search.IndexSearcher searcher;
     private final boolean explain;
-    private final int HIT_LIMIT = 50;
-
+    private final double minTermScore;
+    
     public IndexSearcher(Path path, boolean explain) throws IOException {
         this.reader = DirectoryReader.open(FSDirectory.open(path));
         this.searcher = new org.apache.lucene.search.IndexSearcher(reader);
@@ -45,6 +60,13 @@ public class IndexSearcher implements AutoCloseable {
         // https://en.wikipedia.org/wiki/Okapi_BM25
         this.searcher.setSimilarity(new BM25Similarity(0,0));
         this.explain = explain;
+
+        // Calculate the score for a term present in P% of the documents
+        // N is the total number of documents in the index
+        var N = searcher.getIndexReader().getDocCount(PATH_FIELD);
+        // now, per definition of BM25 with k1=0 we have
+        // IDF=ln(((N-n) + 0.5) / (N + 0.5) +1)
+        this.minTermScore = Math.log((N - P * N + 0.5)/ (P * N + 0.5) + 1);
     }
 
     /** Searches the index for a file
@@ -61,7 +83,10 @@ public class IndexSearcher implements AutoCloseable {
     /** Searches the index for a patch (list of chunks */
     private List<QueryResult> searchImpl(List<String> chunks) {
         try {
-            var query = buildQuery(chunks);
+            var tokens = tokenize(chunks);
+            var termCount = tokens.stream().mapToInt(Collection::size).sum();
+
+            var query = buildQuery(tokens);
 
             var results = searcher.search(query, HIT_LIMIT);
 
@@ -80,6 +105,7 @@ public class IndexSearcher implements AutoCloseable {
                             throw new RuntimeException(e);
                         }
                     })
+                    .filter(r -> r.score > minTermScore * termCount)
                     .collect(toList());
         }
         catch (IOException e) {
@@ -87,14 +113,13 @@ public class IndexSearcher implements AutoCloseable {
         }
     }
 
-    private Query buildQuery(List<String> chunks) throws IOException {
+    private List<List<String>> tokenize(List<String> chunks) {
         return chunks.stream()
-                .map(this::buildQuery)
-                .reduce(new BooleanQuery.Builder(), (builder, query) -> builder.add(query, SHOULD), (b1, b2) -> b2)
-                .build();
+                .map(this::tokenize)
+                .collect(Collectors.toList());
     }
 
-    private Query buildQuery(String chunk) {
+    private List<String> tokenize(String chunk) {
         var analyzer = new SourceAnalyzer();
 
         var tokens = new LinkedList<String>();
@@ -109,7 +134,19 @@ public class IndexSearcher implements AutoCloseable {
         catch (IOException e) {
             // cannot really happen, as it's all in-memory operations
         }
+        return tokens;
+    }
 
+    private Query buildQuery(List<List<String>> chunks) {
+        // a query for a file SHOULD contain every chunk
+        return (Query) chunks.stream()
+                .map(this::buildChunkQuery)
+                .reduce(new BooleanQuery.Builder(), (builder, query1) -> builder.add(query1, SHOULD), (b1, b2) -> b2)
+                .build();
+    }
+
+    private Query buildChunkQuery(List<String> tokens) {
+        // a query for a chunk MUST contain every line (token)
         return tokens.stream()
                 .map(t -> new Term(SOURCE_FIELD, t))
                 .reduce(new PhraseQuery.Builder(), (builder, term) -> builder.add(term), (b1,b2) -> b2)
