@@ -2,10 +2,10 @@ import React, {useState} from 'react'
 import Dropzone from 'react-dropzone'
 
 function App() {
-  const [state, setState] = useState({patch: "", results: null, error: false})
+  const [state, setState] = useState({patch: "", patchTargetResults: null, byContentResults: null, error: null})
 
   const onChange = event => {
-    setState({patch: event.target.value, results: state.results, error: state.error})
+    setState({patch: event.target.value, patchTargetResults: state.patchTargetResults, byContentResults: state.byContentResults, error: state.error})
   }
 
   const onDrop = async acceptedFiles => {
@@ -21,16 +21,24 @@ function App() {
 
   const search = async (patch) => {
     try {
-      const response = await fetch("/search", { method: "POST", body: patch })
-      const text = await response.text()
-      if (response.ok) {
-        setState({patch: patch, results: JSON.parse(text), error: false})
+      const patchTargetResponse = await fetch("/search", { method: "POST", body: patch })
+      const patchTargetText = await patchTargetResponse.text()
+
+      if (!patchTargetResponse.ok) {
+        setState({patch: patch, patchTargetResults: null, byContentResults: null, error: patchTargetText})
+        return;
       }
-      else {
-        setState({patch: patch, results: text, error: !response.ok})
+
+      const byContentResponse = await fetch("/search?by_content=true", { method: "POST", body: patch })
+      const byContentText = await byContentResponse.text()
+      if (!byContentResponse.ok) {
+        setState({patch: patch, patchTargetResults: null, byContentResults: null, error: byContentText})
+        return;
       }
+
+      setState({patch: patch, patchTargetResults: JSON.parse(patchTargetText), byContentResults: JSON.parse(byContentText), error: null})
     } catch (error) {
-      setState({patch: patch, results: error.message, error: true})
+      setState({patch: patch, patchTargetResults: null, byContentResults: null, error: error.message})
     }
   }
   
@@ -51,27 +59,33 @@ function App() {
               </section>
             )}
           </Dropzone>
+          <ResultBox error={state.error} patchTargetResults={state.patchTargetResults} byContentResults={state.byContentResults} />
         </form>
-        <ResultBox error={state.error} results={state.results} />
       </main>
     </div>
   );
 }
 
 function ResultBox(props) {
-  if (props.results == null) {
+  if (props.error != null) {
+    return <p>Error: {props.error}</p>
+  }
+  if (props.patchTargetResults == null && props.byContentResults == null) {
     return null;
   }
-  if (props.error) {
-    return <p>Error: {props.results}</p>
-  }
   return (
-    <ul>
-      {Object.keys(props.results).map(file => {
-        return <li key={file}>{file}: <FileResults fileResults={props.results[file]} /></li>
-      })}
-    </ul>
-  );  
+    <div>
+        <h2>Potential patch targets</h2>
+        <ul>
+          {Object.keys(props.patchTargetResults).map(file => {
+            return <li key={file}>{file}: <FileResults fileResults={props.patchTargetResults[file]} /></li>
+          })}
+        </ul>
+
+        <h2>Potential patch copies</h2>
+        <FileResults fileResults={props.byContentResults} />
+    </div>
+  );
 }
 
 function FileResults(props) {

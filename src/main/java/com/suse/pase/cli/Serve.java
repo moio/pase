@@ -1,5 +1,8 @@
 package com.suse.pase.cli;
 
+import static com.suse.pase.query.QueryFactory.buildByContentQuery;
+import static com.suse.pase.query.QueryFactory.buildPatchTargetQuery;
+import static java.lang.Boolean.parseBoolean;
 import static picocli.CommandLine.Option;
 import static spark.Spark.awaitInitialization;
 import static spark.Spark.exception;
@@ -9,7 +12,6 @@ import static spark.Spark.staticFileLocation;
 
 import com.github.difflib.unifieddiff.UnifiedDiffParserException;
 import com.google.gson.Gson;
-import com.suse.pase.PatchParser;
 import com.suse.pase.index.IndexSearcher;
 
 import java.io.ByteArrayInputStream;
@@ -45,9 +47,12 @@ public class Serve implements Callable<Integer> {
                 var patch = req.body();
                 var inputStream = new ByteArrayInputStream(patch.getBytes(StandardCharsets.UTF_8));
 
-                var results = searcher.search(PatchParser.parsePatch(inputStream));
-
-                return results;
+                if (parseBoolean(req.queryParamOrDefault("by_content", "false"))) {
+                    return searcher.search(buildByContentQuery(inputStream));
+                }
+                else {
+                    return searcher.search(buildPatchTargetQuery(inputStream));
+                }
             }, gson::toJson);
 
             exception(UnifiedDiffParserException.class, (exception, request, response) -> {
