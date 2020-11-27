@@ -8,27 +8,24 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
 
-import com.suse.pase.FileQuery;
-import com.suse.pase.QueryResult;
-import com.suse.pase.index.IndexCommons.SourceAnalyzer;
+import com.suse.pase.query.QueryResult;
+import com.suse.pase.query.PatchTargetQuery;
+import com.suse.pase.query.ByContentQuery;
 
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.store.FSDirectory;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /** Encapsulates Lucene details about searching indexes */
 public class IndexSearcher implements AutoCloseable {
@@ -69,25 +66,54 @@ public class IndexSearcher implements AutoCloseable {
         this.minTermScore = Math.log((N - P * N + 0.5)/ (P * N + 0.5) + 1);
     }
 
-    /** Searches the index for a file
+    /** Searches the index for files that match the patch target
      * @return a map from filename (as specified in the patch) to list of results
      */
-    public Map<String, List<QueryResult>> search(List<FileQuery> fileQueries) {
-        return fileQueries.stream()
+    public Map<String, List<QueryResult>> search(List<PatchTargetQuery> targets) {
+        return targets.stream()
                 .collect(toMap(
-                        fq -> fq.getFile(),
-                        fq -> searchImpl(fq.getChunks())
+                        target -> target.getPath(),
+                        target -> {
+                            var query = buildQuery(target);
+                            var termCount = target.getLineCount();
+                            return search(query, termCount);
+                        }
                 ));
     }
 
+    /** Searches the index for files with the same contents */
+    public List<QueryResult> search(ByContentQuery patchableSite) {
+        var query = buildQuery(patchableSite);
+        return search(query, patchableSite.getContent().size());
+    }
+
+    private Query buildQuery(PatchTargetQuery target) {
+        // a query for a file SHOULD contain every chunk
+        return target.getChunks().stream()
+                .map(this::buildQuery)
+                .reduce(new BooleanQuery.Builder(), (builder, query) -> builder.add(query, SHOULD), (b1, b2) -> b2)
+                .build();
+    }
+
+    private Query buildQuery(List<String> tokens) {
+        // a query for a chunk MUST contain every line (token)
+        return tokens.stream()
+                .map(t -> new Term(SOURCE_FIELD, t))
+                .reduce(new PhraseQuery.Builder(), (builder, term) -> builder.add(term), (b1,b2) -> b2)
+                .build();
+    }
+
+    private Query buildQuery(ByContentQuery file) {
+        // a query for a file SHOULD contain every chunk
+        return file.getContent().stream()
+                .map(t -> new Term(SOURCE_FIELD, t))
+                .reduce(new BooleanQuery.Builder(), (builder, term) -> builder.add(new TermQuery(term), SHOULD), (b1, b2) -> b2)
+                .build();
+    }
+
     /** Searches the index for a patch (list of chunks */
-    private List<QueryResult> searchImpl(List<String> chunks) {
+    private List<QueryResult> search(Query query, int termCount) {
         try {
-            var tokens = tokenize(chunks);
-            var termCount = tokens.stream().mapToInt(Collection::size).sum();
-
-            var query = buildQuery(tokens);
-
             var results = searcher.search(query, HIT_LIMIT);
 
             return stream(results.scoreDocs)
@@ -111,46 +137,6 @@ public class IndexSearcher implements AutoCloseable {
         catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private List<List<String>> tokenize(List<String> chunks) {
-        return chunks.stream()
-                .map(this::tokenize)
-                .collect(Collectors.toList());
-    }
-
-    private List<String> tokenize(String chunk) {
-        var analyzer = new SourceAnalyzer();
-
-        var tokens = new LinkedList<String>();
-        try {
-            try (var tokenStream  = analyzer.tokenStream(SOURCE_FIELD, chunk)){
-                tokenStream.reset();  // required
-                while (tokenStream.incrementToken()) {
-                    tokens.add(tokenStream.getAttribute(CharTermAttribute.class).toString());
-                }
-            }
-        }
-        catch (IOException e) {
-            // cannot really happen, as it's all in-memory operations
-        }
-        return tokens;
-    }
-
-    private Query buildQuery(List<List<String>> chunks) {
-        // a query for a file SHOULD contain every chunk
-        return (Query) chunks.stream()
-                .map(this::buildChunkQuery)
-                .reduce(new BooleanQuery.Builder(), (builder, query1) -> builder.add(query1, SHOULD), (b1, b2) -> b2)
-                .build();
-    }
-
-    private Query buildChunkQuery(List<String> tokens) {
-        // a query for a chunk MUST contain every line (token)
-        return tokens.stream()
-                .map(t -> new Term(SOURCE_FIELD, t))
-                .reduce(new PhraseQuery.Builder(), (builder, term) -> builder.add(term), (b1,b2) -> b2)
-                .build();
     }
 
     @Override

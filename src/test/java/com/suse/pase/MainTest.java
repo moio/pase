@@ -35,7 +35,7 @@ public class MainTest {
     @org.junit.jupiter.api.Test
     public void searchTest() throws Exception {
         var patchPath = resourcePath.resolve("patches").resolve("CVE-2017-5638.patch");
-        var results = Search.search(indexPath, patchPath, false);
+        var results = Search.search(indexPath, patchPath, false, false);
         assertEquals(3, results.size());
 
         var first = results.get("core/src/main/java/org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest.java").get(0);

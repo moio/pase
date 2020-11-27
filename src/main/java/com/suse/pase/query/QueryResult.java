@@ -1,4 +1,4 @@
-package com.suse.pase;
+package com.suse.pase.query;
 
 public class QueryResult {
     public final String path;
