@@ -8,17 +8,18 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
 
-import com.suse.pase.query.QueryResult;
-import com.suse.pase.query.PatchTargetQuery;
 import com.suse.pase.query.ByContentQuery;
+import com.suse.pase.query.PatchTargetQuery;
+import com.suse.pase.query.QueryResult;
 
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.similarities.BM25Similarity;
+import org.apache.lucene.search.spans.SpanNearQuery;
+import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.store.FSDirectory;
 
 import java.io.IOException;
@@ -42,6 +43,9 @@ public class IndexSearcher implements AutoCloseable {
      * Any result scoring worse than that will be cut off.
      */
     private static final double P = 0.1;
+
+    /** Maximum number of unexpected lines between matching lines */
+    private static final int SLOP = 3;
 
     private static Logger LOG = Logger.getLogger(IndexSearcher.class.getName());
     private final DirectoryReader reader;
@@ -88,7 +92,9 @@ public class IndexSearcher implements AutoCloseable {
     }
 
     private Query buildQuery(PatchTargetQuery target) {
-        // a query for a file SHOULD contain every chunk
+        // a query for a file SHOULD contain every chunk:
+        //   - files with more matching chunks score higher
+        //   - files no matching chunks are never returned
         return target.getChunks().stream()
                 .map(this::buildQuery)
                 .reduce(new BooleanQuery.Builder(), (builder, query) -> builder.add(query, SHOULD), (b1, b2) -> b2)
@@ -96,10 +102,17 @@ public class IndexSearcher implements AutoCloseable {
     }
 
     private Query buildQuery(List<String> tokens) {
-        // a query for a chunk MUST contain every line (token)
+        // a query for a chunk SHOULD contain every line close to one another
+        //   - files with matching lines close together will score higher
+        //   - files without all the lines matching will not be returned
+        //   - line ordering must be respected
+        if (tokens.size() == 1) {
+            return new SpanTermQuery(new Term(SOURCE_FIELD, tokens.get(0)));
+        }
         return tokens.stream()
-                .map(t -> new Term(SOURCE_FIELD, t))
-                .reduce(new PhraseQuery.Builder(), (builder, term) -> builder.add(term), (b1,b2) -> b2)
+                .map(token -> new SpanTermQuery(new Term(SOURCE_FIELD, token)))
+                .reduce(new SpanNearQuery.Builder(SOURCE_FIELD, true), SpanNearQuery.Builder::addClause, (b1, b2) -> b2)
+                .setSlop(SLOP)
                 .build();
     }
 
