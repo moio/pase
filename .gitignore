@@ -13,8 +13,11 @@
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 *.iml
+
+# java
 out/
 target/
+src/main/resources/*
 
 # vscode
 .vscode/
