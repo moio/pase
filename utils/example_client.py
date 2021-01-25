@@ -12,7 +12,7 @@ def pase_search(patch):
     response = urlopen('http://localhost:4567/search', patch).read()
     return json.loads(response)
 
-patch = open(argv[1])
+patch = open(argv[1]).read().encode("utf-8")
 results = pase_search(patch)
 
 print("%d results found" % len(results))
