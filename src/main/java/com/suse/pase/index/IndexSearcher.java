@@ -95,6 +95,7 @@ public class IndexSearcher implements AutoCloseable {
         // a query for a file SHOULD contain every chunk:
         //   - files with more matching chunks score higher
         //   - files no matching chunks are never returned
+        BooleanQuery.setMaxClauseCount(1024*1024);
         return target.getChunks().stream()
                 .map(this::buildQuery)
                 .reduce(new BooleanQuery.Builder(), (builder, query) -> builder.add(query, SHOULD), (b1, b2) -> b2)
