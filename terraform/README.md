@@ -27,3 +27,11 @@ When Terraform has finished a DNS name will be shown as output, you can SSH into
 ```
 ssh -i ~/.ssh/moio.pem ec2-user@$DOMAIN_NAME_HERE
 ```
+
+## Re-apply configuration
+
+```
+terraform taint module.server.null_resource.host_salt_configuration
+terraform applyterraform init
+terraform apply
+```
