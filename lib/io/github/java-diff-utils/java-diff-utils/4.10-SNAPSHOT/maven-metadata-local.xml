@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>io.github.java-diff-utils</groupId>
+  <artifactId>java-diff-utils</artifactId>
+  <version>4.10-SNAPSHOT</version>
+  <versioning>
+    <snapshot>
+      <localCopy>true</localCopy>
+    </snapshot>
+    <lastUpdated>20210125145253</lastUpdated>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>4.10-SNAPSHOT</value>
+        <updated>20210125145253</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>4.10-SNAPSHOT</value>
+        <updated>20210125145253</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+</metadata>

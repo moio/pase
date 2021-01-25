@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>io.github.java-diff-utils</groupId>
+  <artifactId>java-diff-utils</artifactId>
+  <versioning>
+    <versions>
+      <version>4.10-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20210125145253</lastUpdated>
+  </versioning>
+</metadata>
