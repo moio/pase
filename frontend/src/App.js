@@ -77,9 +77,9 @@ function ResultBox(props) {
   return (
     <div>
         <h2>Potential patch targets</h2>
-        <ul>
+        <ul className="level-1">
           {Object.keys(props.patchTargetResults).map(file => {
-            return <li key={file}>{file}: <FileResults fileResults={props.patchTargetResults[file]} /></li>
+            return <li className="level-1-element" key={file}>{file}: <FileResults fileResults={props.patchTargetResults[file]} /></li>
           })}
         </ul>
 
@@ -94,8 +94,8 @@ function FileResults(props) {
     return <em>no results found</em>
   }
   return (
-    <ul>
-      {props.fileResults.map(result => <li key={"file-" + result}>{result.path} (score: {result.score.toFixed(0)})</li>)}
+    <ul className="level-2">
+      {props.fileResults.map(result => <li className="level-2-element" key={"file-" + result}>{result.path} (score: {result.score.toFixed(0)})</li>)}
     </ul>
   );
 }

@@ -32,8 +32,8 @@ textarea {
   margin: auto;
   display: block;
   background: #0C322C;
-  padding: 0.5em;
-  color: #EFEFEF;
+  padding: 1em;
+  color: #e0e0e0;
   font-size: 1.1em;
 }
 
@@ -46,4 +46,19 @@ header {
   padding: 1em;
   background: #eee;
   border-top: 1px solid #aaa;
+}
+
+ul {
+  list-style: none;
+}
+ul li {
+  line-height: 1.5em;
+  padding: 0.5em;
+}
+
+.App .App-main form ul.level-1 {
+  border-bottom: 1px solid #ddd;
+}
+.App .App-main form ul.level-1 ul.level-2 li.level-2-element:nth-child(2n) {
+  background-color: #ddd;
 }
