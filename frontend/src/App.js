@@ -45,6 +45,7 @@ function App() {
   return (
     <div className="App">
       <header>
+        <img src="chameleon.svg"/>
         <h1>PaSe - patch search</h1>
       </header>
       <main className="App-main">

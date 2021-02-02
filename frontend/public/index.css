@@ -16,6 +16,10 @@ code {
 }
 
 
+header * {
+  vertical-align: middle;
+  display: inline-block;
+}
 h1 {
   margin: auto;
   padding-left: 1em;
