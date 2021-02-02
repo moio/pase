@@ -28,11 +28,13 @@ textarea {
   border: 3px double #abc;
   border-radius: 4px;
   width: 100%;
-  height: 30em;
+  height: 25em;
   margin: auto;
   display: block;
-  background: #cde;
+  background: #0C322C;
   padding: 0.5em;
+  color: #EFEFEF;
+  font-size: 1.1em;
 }
 
 .App .App-main form,
