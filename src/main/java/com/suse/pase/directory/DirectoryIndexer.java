@@ -27,15 +27,17 @@ public class DirectoryIndexer {
     private static Logger LOG = Logger.getLogger(DirectoryIndexer.class.getName());
     private final Path root;
     private final int recursionLimit;
+    private final boolean followSymlinks;
     private final IndexWriter index;
     private final AtomicInteger processedFiles = new AtomicInteger();
     private final AtomicInteger processedFilesInArchives = new AtomicInteger();
     private final AtomicInteger updatedFiles = new AtomicInteger();
     private final AtomicInteger updatedFilesInArchives = new AtomicInteger();
 
-    public DirectoryIndexer(Path path, int recursionLimit, IndexWriter index) {
+    public DirectoryIndexer(Path path, int recursionLimit, boolean followSymlinks, IndexWriter index) {
         this.root = path;
         this.recursionLimit = recursionLimit;
+        this.followSymlinks = followSymlinks;
         this.index = index;
     }
 
@@ -45,7 +47,7 @@ public class DirectoryIndexer {
      */
     public void index() {
         Stopwatch timer = Stopwatch.createStarted();
-        new DirectoryWalker(root).walkFiles((path, stream) -> {
+        new DirectoryWalker(root, this.followSymlinks).walkFiles((path, stream) -> {
             var fingerprint = fingerprint(path);
             if (isText(path, stream)) {
                 if (index.add(path.toString(), fingerprint, of(stream))) {
