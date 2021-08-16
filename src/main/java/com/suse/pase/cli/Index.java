@@ -14,6 +14,8 @@ import picocli.CommandLine.Parameters;
 public class Index implements Callable<Integer> {
     @Option(names = { "-r", "--recursion-limit" }, paramLabel = "RECURSION_LIMIT", defaultValue = "2", description = "the number of nested archives to unpack")
     int recursionLimit;
+    @Option(names = { "-s", "--follow-symlinks" }, description = "follow symbolic links when indexing")
+    boolean followSymlinks;
     @Parameters(index = "0", paramLabel = "SOURCE_PATH", description = "directory to index")
     Path sourcePath;
     @Parameters(index = "1", paramLabel = "INDEX_PATH", description = "directory where to create the index")
@@ -21,14 +23,14 @@ public class Index implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        index(sourcePath, indexPath, recursionLimit);
+        index(sourcePath, indexPath, recursionLimit, followSymlinks);
         return 0;
     }
 
-    public static void index(Path sourcePath, Path indexPath, int recursionLimit) throws Exception {
+    public static void index(Path sourcePath, Path indexPath, int recursionLimit, boolean followSymlinks) throws Exception {
         System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$s] %5$s %n");
         try (var writer = new IndexWriter(indexPath)) {
-            new DirectoryIndexer(sourcePath, recursionLimit, writer).index();
+            new DirectoryIndexer(sourcePath, recursionLimit, followSymlinks, writer).index();
         }
     }
 }
