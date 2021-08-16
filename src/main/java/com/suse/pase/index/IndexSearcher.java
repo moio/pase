@@ -119,6 +119,7 @@ public class IndexSearcher implements AutoCloseable {
 
     private Query buildQuery(ByContentQuery file) {
         // a query for a file SHOULD contain every chunk
+        BooleanQuery.setMaxClauseCount(1024*1024);
         return file.getContent().stream()
                 .map(t -> new Term(SOURCE_FIELD, t))
                 .reduce(new BooleanQuery.Builder(), (builder, term) -> builder.add(new TermQuery(term), SHOULD), (b1, b2) -> b2)
