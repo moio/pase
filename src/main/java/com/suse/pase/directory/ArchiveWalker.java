@@ -80,6 +80,9 @@ public class ArchiveWalker {
             if (path.toString().endsWith(".zip")) {
                 return of(new ArchiveStreamFactory().createArchiveInputStream("zip", stream));
             }
+            if (path.toString().endsWith(".obscpio")) {
+                return of(new ArchiveStreamFactory().createArchiveInputStream("cpio", stream));
+            }
         }
         catch (Exception e) {
             LOG.warning("Could not decompress archive (unexpected format?): " + path);
