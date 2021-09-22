@@ -41,7 +41,13 @@ public class Search implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        printResults(search(indexPath, patchPath, explain, mode.byContent, mode.appliedPatch));
+        boolean byContent = false;
+        boolean appliedPatch = false;
+        if (mode != null) {
+            byContent = mode.byContent;
+            appliedPatch = mode.appliedPatch
+        }
+        printResults(search(indexPath, patchPath, explain, byContent, appliedPatch));
         return 0;
     }
 
