@@ -45,7 +45,7 @@ public class Search implements Callable<Integer> {
         boolean appliedPatch = false;
         if (mode != null) {
             byContent = mode.byContent;
-            appliedPatch = mode.appliedPatch
+            appliedPatch = mode.appliedPatch;
         }
         printResults(search(indexPath, patchPath, explain, byContent, appliedPatch));
         return 0;
