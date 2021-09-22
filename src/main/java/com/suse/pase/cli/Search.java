@@ -1,7 +1,7 @@
 package com.suse.pase.cli;
 
-import static com.suse.pase.query.QueryFactory.buildPatchTargetQuery;
-import static com.suse.pase.query.QueryFactory.buildByContentQuery;
+import static com.suse.pase.query.QueryFactory.*;
+import static picocli.CommandLine.ArgGroup;
 import static picocli.CommandLine.Option;
 
 import com.suse.pase.query.QueryResult;
@@ -21,8 +21,16 @@ public class Search implements Callable<Integer> {
     @Option(names = { "-e", "--explain" }, paramLabel = "EXPLAIN", defaultValue = "false", description = "Log debug information about scores")
     boolean explain;
 
-    @Option(names = { "-c", "--by-content" }, paramLabel = "BY_CONTENT", defaultValue = "false", description = "Search for files similar to the patch itself, rather than files where the patch can be applied")
-    boolean byContent;
+    @ArgGroup(exclusive = true, multiplicity = "0..1")
+    SearchMode mode;
+
+    static class SearchMode {
+        @Option(names = { "-c", "--by-content" }, paramLabel = "BY_CONTENT", defaultValue = "false", description = "Search for files similar to the patch itself, rather than files where the patch can be applied")
+        boolean byContent;
+
+        @Option(names = { "-a", "--applied-patch" }, paramLabel = "APPLIED", defaultValue = "false", description = "Search for files matching the applied patch")
+        boolean appliedPatch;
+    }
 
     @Parameters(index = "0", paramLabel = "INDEX_PATH", description = "directory with a pase index")
     Path indexPath;
@@ -33,17 +41,19 @@ public class Search implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        printResults(search(indexPath, patchPath, explain, byContent));
+        printResults(search(indexPath, patchPath, explain, mode.byContent, mode.appliedPatch));
         return 0;
     }
 
-    public static Map<String, List<QueryResult>> search(Path indexPath, Path patchPath, boolean explain, boolean byContent) throws Exception {
+    public static Map<String, List<QueryResult>> search(Path indexPath, Path patchPath, boolean explain, boolean byContent, boolean appliedPatch) throws Exception {
         var pathString = patchPath.toString();
         try (var searcher = new IndexSearcher(indexPath, explain); var fis = new FileInputStream(pathString)) {
             if (byContent) {
                 return Map.of(pathString, searcher.search(buildByContentQuery(fis)));
             }
-            else {
+            else if (appliedPatch) {
+                return searcher.search(buildAppliedPatchTargetQuery(fis));
+            } else {
                 return searcher.search(buildPatchTargetQuery(fis));
             }
         }

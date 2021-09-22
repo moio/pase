@@ -1,7 +1,6 @@
 package com.suse.pase.cli;
 
-import static com.suse.pase.query.QueryFactory.buildByContentQuery;
-import static com.suse.pase.query.QueryFactory.buildPatchTargetQuery;
+import static com.suse.pase.query.QueryFactory.*;
 import static java.lang.Boolean.parseBoolean;
 import static picocli.CommandLine.Option;
 import static spark.Spark.awaitInitialization;
@@ -49,6 +48,8 @@ public class Serve implements Callable<Integer> {
 
                 if (parseBoolean(req.queryParamOrDefault("by_content", "false"))) {
                     return searcher.search(buildByContentQuery(inputStream));
+                } else if (parseBoolean(req.queryParamOrDefault("applied_patch", "false"))) {
+                    return searcher.search(buildAppliedPatchTargetQuery(inputStream));
                 }
                 else {
                     return searcher.search(buildPatchTargetQuery(inputStream));

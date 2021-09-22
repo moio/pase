@@ -1,8 +1,6 @@
 package com.suse.pase.query;
 
-import static com.github.difflib.patch.DeltaType.CHANGE;
-import static com.github.difflib.patch.DeltaType.DELETE;
-import static com.github.difflib.patch.DeltaType.EQUAL;
+import static com.github.difflib.patch.DeltaType.*;
 import static java.util.EnumSet.of;
 import static java.util.stream.Collectors.toList;
 
@@ -38,6 +36,23 @@ public class QueryFactory {
                 return new PatchTargetQuery(path, chunks);
             })
             .collect(toList());
+    }
+
+    /** Parses a patch from an input stream and returns queries (one per file) for the applied context of it **/
+    public static List<PatchTargetQuery> buildAppliedPatchTargetQuery(InputStream is) throws IOException {
+        var ud = UnifiedDiffReader.parseUnifiedDiff(is);
+
+        return ud.getFiles().stream()
+                .filter(f -> !f.getFromFile().equals("/dev/null"))
+                .map(file ->{
+                    var path = file.getFromFile();
+                    var chunks = file.getPatch().getDeltas().stream()
+                            .filter(d -> of(INSERT, EQUAL, CHANGE).contains(d.getType()))
+                            .map(d -> d.getTarget().getLines().stream().filter(l -> !l.isEmpty()).collect(toList()))
+                            .collect(toList());
+                    return new PatchTargetQuery(path, chunks);
+                })
+                .collect(toList());
     }
 
     /** Returns a query object for a file with identical content */
