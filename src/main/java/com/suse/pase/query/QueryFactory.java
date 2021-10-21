@@ -22,7 +22,7 @@ public class QueryFactory {
     }
 
     /** Parses a patch from an input stream and returns queries (one per file) **/
-    public static List<PatchTargetQuery> buildPatchTargetQuery(InputStream is) throws IOException {
+    public static List<PatchQuery> buildPatchTargetQuery(InputStream is) throws IOException {
         var ud = UnifiedDiffReader.parseUnifiedDiff(is);
 
         return ud.getFiles().stream()
@@ -33,13 +33,13 @@ public class QueryFactory {
                         .filter(d -> of(DELETE, EQUAL, CHANGE).contains(d.getType()))
                         .map(d -> d.getSource().getLines().stream().filter(l -> !l.isEmpty()).collect(toList()))
                         .collect(toList());
-                return new PatchTargetQuery(path, chunks);
+                return new PatchQuery(path, chunks);
             })
             .collect(toList());
     }
 
     /** Parses a patch from an input stream and returns queries (one per file) for the applied context of it **/
-    public static List<PatchTargetQuery> buildAppliedPatchTargetQuery(InputStream is) throws IOException {
+    public static List<PatchQuery> buildAppliedPatchTargetQuery(InputStream is) throws IOException {
         var ud = UnifiedDiffReader.parseUnifiedDiff(is);
 
         return ud.getFiles().stream()
@@ -50,7 +50,7 @@ public class QueryFactory {
                             .filter(d -> of(INSERT, EQUAL, CHANGE).contains(d.getType()))
                             .map(d -> d.getTarget().getLines().stream().filter(l -> !l.isEmpty()).collect(toList()))
                             .collect(toList());
-                    return new PatchTargetQuery(path, chunks);
+                    return new PatchQuery(path, chunks);
                 })
                 .collect(toList());
     }

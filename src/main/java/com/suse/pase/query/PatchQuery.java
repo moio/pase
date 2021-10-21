@@ -4,11 +4,11 @@ import java.util.Collection;
 import java.util.List;
 
 /** A query to find indexed files on which a patch can be applied (or almost). */
-public class PatchTargetQuery {
+public class PatchQuery {
     private final String path;
     private final List<List<String>> chunks;
 
-    public PatchTargetQuery(String path, List<List<String>> chunks) {
+    public PatchQuery(String path, List<List<String>> chunks) {
         this.path = path;
         this.chunks = chunks;
     }
