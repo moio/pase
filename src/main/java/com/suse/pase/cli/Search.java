@@ -58,9 +58,9 @@ public class Search implements Callable<Integer> {
                 return Map.of(pathString, searcher.search(buildByContentQuery(fis)));
             }
             else if (appliedPatch) {
-                return searcher.search(buildAppliedPatchTargetQuery(fis));
+                return searcher.search(buildAppliedPatchQuery(fis));
             } else {
-                return searcher.search(buildPatchTargetQuery(fis));
+                return searcher.search(buildUnappliedPatchQuery(fis));
             }
         }
     }

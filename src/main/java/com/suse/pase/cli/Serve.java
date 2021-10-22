@@ -49,10 +49,10 @@ public class Serve implements Callable<Integer> {
                 if (parseBoolean(req.queryParamOrDefault("by_content", "false"))) {
                     return searcher.search(buildByContentQuery(inputStream));
                 } else if (parseBoolean(req.queryParamOrDefault("applied_patch", "false"))) {
-                    return searcher.search(buildAppliedPatchTargetQuery(inputStream));
+                    return searcher.search(buildAppliedPatchQuery(inputStream));
                 }
                 else {
-                    return searcher.search(buildPatchTargetQuery(inputStream));
+                    return searcher.search(buildUnappliedPatchQuery(inputStream));
                 }
             }, gson::toJson);
 
