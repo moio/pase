@@ -9,7 +9,7 @@ import static java.util.stream.Collectors.toMap;
 import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
 
 import com.suse.pase.query.ByContentQuery;
-import com.suse.pase.query.PatchTargetQuery;
+import com.suse.pase.query.PatchQuery;
 import com.suse.pase.query.QueryResult;
 
 import org.apache.lucene.index.DirectoryReader;
@@ -73,7 +73,7 @@ public class IndexSearcher implements AutoCloseable {
     /** Searches the index for files that match the patch target
      * @return a map from filename (as specified in the patch) to list of results
      */
-    public Map<String, List<QueryResult>> search(List<PatchTargetQuery> targets) {
+    public Map<String, List<QueryResult>> search(List<PatchQuery> targets) {
         return targets.stream()
                 .collect(toMap(
                         target -> target.getPath(),
@@ -91,7 +91,7 @@ public class IndexSearcher implements AutoCloseable {
         return search(query, patchableSite.getContent().size());
     }
 
-    private Query buildQuery(PatchTargetQuery target) {
+    private Query buildQuery(PatchQuery target) {
         // a query for a file SHOULD contain every chunk:
         //   - files with more matching chunks score higher
         //   - files no matching chunks are never returned
