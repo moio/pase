@@ -1,0 +1,14 @@
+services:
+  indexer:
+    build: .
+    volumes:
+      - ${SRCDIR}:/src
+      - ${INDEXDIR}:/index
+    command: ["index", "/src", "/index"]
+  server:
+    build: .
+    volumes:
+      - ${INDEXDIR}:/index
+    command: ["serve", "/index"]
+    ports:
+      - "4567:4567"
