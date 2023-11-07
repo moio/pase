@@ -1,20 +1,24 @@
 import React, {useState} from 'react'
-import Dropzone from 'react-dropzone'
+import 'codemirror/addon/display/placeholder'
+import 'codemirror/lib/codemirror.css'
+import 'codemirror/mode/diff/diff'
+import 'codemirror/theme/material.css'
+import {Controlled as CodeMirror} from 'react-codemirror2'
 
 function App() {
   const [state, setState] = useState({patch: "", patchTargetResults: null, byContentResults: null, error: null})
 
-  const onChange = event => {
-    setState({patch: event.target.value, patchTargetResults: state.patchTargetResults, appliedPatchResults: state.appliedPatchResults, byContentResults: state.byContentResults, error: state.error})
+  const onChange = (cm, data, value) => {
+    setState({patch: value, patchTargetResults: state.patchTargetResults, appliedPatchResults: state.appliedPatchResults, byContentResults: state.byContentResults, error: state.error})
   }
 
-  const onDrop = async acceptedFiles => {
-    const patch = await new Response(acceptedFiles[0]).text()
+  const onDrop = async (cm, event) => {
+    const patch = await event.dataTransfer.files[0].text()
     search(patch)
   }
 
-  const onPaste = async e => {
-    const clipboardData = e.clipboardData || window.clipboardData
+  const onPaste = (cm, event) => {
+    const clipboardData = event.clipboardData || window.clipboardData
     const patch = clipboardData.getData('Text')
     search(patch)
   }
@@ -56,16 +60,9 @@ function App() {
       </header>
       <main className="App-main">
         <form>
-        <Dropzone onDrop={onDrop} noClick={true}>
-            {({getRootProps, getInputProps}) => (
-              <section>
-                <div {...getRootProps()}>
-                  <input {...getInputProps()} />
-                  <textarea value={state.patch} rows={20} cols={80} placeholder="Paste or drop patch here..." onChange={onChange} onPaste={onPaste} />
-                </div>
-              </section>
-            )}
-          </Dropzone>
+          <section>
+            <CodeMirror value={state.patch} options={{ mode: 'diff', theme: 'material', placeholder: 'Paste or drop patch here...', allowDropFileTypes: ['text/x-patch', 'text/x-diff', 'text/plain'] }} onChange={onChange} onPaste={onPaste} onDrop={onDrop} />
+          </section>
           <ResultBox error={state.error} patchTargetResults={state.patchTargetResults} appliedPatchResults={state.appliedPatchResults} byContentResults={state.byContentResults} />
         </form>
       </main>
