@@ -2,7 +2,7 @@ FROM maven:3-eclipse-temurin-11-alpine AS builder
 WORKDIR /src
 COPY . .
 RUN apk add --no-cache npm
-RUN npm install react-dom react-dropzone react-scripts
+RUN npm install ./frontend
 RUN ./build.sh
 
 FROM eclipse-temurin:11-alpine
