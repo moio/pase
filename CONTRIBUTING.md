@@ -29,3 +29,14 @@ To just run tests, execute:
 mvn test
 ```
 
+## Building and running as Docker containers
+
+To ease experimentation with PaSe, use the bundled `Dockerfile` and `compose.yaml`
+to build and run a pair of Docker containers (one for the source indexer, one for the web server).
+
+Edit the paths to the directory containing the sources (`$SRCDIR`) and to where the index will be
+written (`$INDEXDIR`) on the host in file `.env`, then run `docker compose up`.
+
+This will build and run a pair of containers named `pase-indexer-1` and `pase-server-1`.
+The indexer will scan and index the directory containing the sources, then exit.
+The server will listen indefinitely for requests targeting the index at http://localhost:4567/.
