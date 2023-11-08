@@ -1,11 +1,12 @@
-FROM maven:3-eclipse-temurin-11-alpine AS builder
+FROM registry.suse.com/bci/openjdk-devel:11 AS builder
 WORKDIR /src
 COPY . .
-RUN apk add --no-cache npm
+RUN zypper -n refresh
+RUN zypper -n install npm
 RUN npm install ./frontend
 RUN ./build.sh
 
-FROM eclipse-temurin:11-alpine
+FROM registry.suse.com/bci/openjdk:11
 LABEL description="Pa(tch)Se(arch) is an experimental search engine for code allowing search by patch."
 LABEL version="0.1"
 WORKDIR /opt/pase
